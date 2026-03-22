@@ -1,0 +1,10 @@
+﻿{
+  "collectionName": "components_common_partner_logos",
+  "info": { "displayName": "partnerLogo" },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "href": { "type": "string" }
+  }
+}
+

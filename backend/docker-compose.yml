@@ -1,0 +1,30 @@
+﻿version: '3.9'
+services:
+  strapi:
+    build: .
+    ports:
+      - '1337:1337'
+    env_file:
+      - .env
+    volumes:
+      - ./.tmp:/app/.tmp
+      - ./.cache:/app/.cache
+      - ./public/uploads:/app/public/uploads
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: anakora
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
+

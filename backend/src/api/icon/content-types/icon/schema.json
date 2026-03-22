@@ -1,0 +1,19 @@
+﻿{
+  "kind": "collectionType",
+  "collectionName": "icons",
+  "info": {
+    "singularName": "icon",
+    "pluralName": "icons",
+    "displayName": "Icons"
+  },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": { "i18n": { "localized": false } },
+  "attributes": {
+    "label": { "type": "string", "required": true },
+    "sourceType": { "type": "enumeration", "enum": ["lucide", "svg"], "default": "lucide" },
+    "lucideName": { "type": "string" },
+    "svg": { "type": "media", "multiple": false, "allowedTypes": ["images", "files"] },
+    "alt": { "type": "string" }
+  }
+}
+

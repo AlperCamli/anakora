@@ -1,0 +1,14 @@
+﻿{
+  "collectionName": "components_common_archive_items",
+  "info": { "displayName": "archiveItem" },
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "year": { "type": "integer", "required": true },
+    "location": { "type": "string" },
+    "dateLabel": { "type": "string" },
+    "participants": { "type": "integer" },
+    "description": { "type": "text" },
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"] }
+  }
+}
+

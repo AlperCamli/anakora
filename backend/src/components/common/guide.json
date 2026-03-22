@@ -1,0 +1,11 @@
+﻿{
+  "collectionName": "components_common_guides",
+  "info": { "displayName": "guide" },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "title": { "type": "string" },
+    "bio": { "type": "richtext" },
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"] }
+  }
+}
+

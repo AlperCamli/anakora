@@ -1,0 +1,22 @@
+﻿{
+  "kind": "singleType",
+  "collectionName": "experiences_page_settings",
+  "info": {
+    "singularName": "experiences-page-setting",
+    "pluralName": "experiences-page-settings",
+    "displayName": "Experiences Page Settings"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "header": { "type": "component", "component": "blocks.section-header", "repeatable": false },
+    "bottomContact": { "type": "component", "component": "blocks.contact-block", "repeatable": false }
+  }
+}
+

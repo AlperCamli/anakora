@@ -1,0 +1,197 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  
+  /* ANAKORA Brand Colors - Earthy, Premium Palette */
+  --background: #FAF9F7;
+  --foreground: #2A2621;
+  --card: #FFFFFF;
+  --card-foreground: #2A2621;
+  --popover: #FFFFFF;
+  --popover-foreground: #2A2621;
+  
+  /* Primary - Deep Forest Green */
+  --primary: #3D4F3B;
+  --primary-foreground: #FAF9F7;
+  
+  /* Secondary - Sage/Olive */
+  --secondary: #9BA17C;
+  --secondary-foreground: #2A2621;
+  
+  /* Muted - Stone/Sand */
+  --muted: #E8E3D9;
+  --muted-foreground: #7A6A58;
+  
+  /* Accent - Walnut */
+  --accent: #5C4A3D;
+  --accent-foreground: #FAF9F7;
+  
+  /* Terracotta accent for subtle highlights */
+  --terracotta: #B87B5C;
+  --terracotta-foreground: #FAF9F7;
+  
+  --destructive: #C84B31;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(93, 74, 61, 0.15);
+  --input: transparent;
+  --input-background: #F5F3F0;
+  --switch-background: #D4CFC3;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #9BA17C;
+  --radius: 0.5rem;
+  
+  /* Custom ANAKORA specific variables */
+  --stone: #D4CFC3;
+  --sage: #8B9475;
+  --moss: #6B7A5F;
+  --deep-forest: #2A3A28;
+  --clay: #C9B8A8;
+}
+
+.dark {
+  --background: #1A1612;
+  --foreground: #F5F3F0;
+  --card: #2A2621;
+  --card-foreground: #F5F3F0;
+  --popover: #2A2621;
+  --popover-foreground: #F5F3F0;
+  --primary: #9BA17C;
+  --primary-foreground: #1A1612;
+  --secondary: #5C4A3D;
+  --secondary-foreground: #F5F3F0;
+  --muted: #3D3631;
+  --muted-foreground: #C9B8A8;
+  --accent: #7A6A58;
+  --accent-foreground: #F5F3F0;
+  --destructive: #C84B31;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(197, 184, 168, 0.2);
+  --input: rgba(197, 184, 168, 0.1);
+  --ring: #9BA17C;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Custom ANAKORA colors */
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-foreground: var(--terracotta-foreground);
+  --color-stone: var(--stone);
+  --color-sage: var(--sage);
+  --color-moss: var(--moss);
+  --color-deep-forest: var(--deep-forest);
+  --color-clay: var(--clay);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /**
+  * ANAKORA Typography System - Editorial & Premium
+  * Serif for headlines, clean sans-serif for body
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1, h2, h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 3vw, 1.875rem);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  h4 {
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.75;
+    font-weight: 400;
+  }
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+
+  button {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+  }
+
+  input {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  /* Infinite scroll animation for logo band */
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+}

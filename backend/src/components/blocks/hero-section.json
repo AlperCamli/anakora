@@ -1,0 +1,11 @@
+﻿{
+  "collectionName": "components_blocks_hero_sections",
+  "info": { "displayName": "heroSection" },
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "subtitle": { "type": "text" },
+    "backgroundImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "buttons": { "type": "component", "component": "common.button-link", "repeatable": true }
+  }
+}
+

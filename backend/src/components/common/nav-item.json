@@ -1,0 +1,10 @@
+﻿{
+  "collectionName": "components_common_nav_items",
+  "info": { "displayName": "navItem" },
+  "attributes": {
+    "label": { "type": "string", "required": true },
+    "url": { "type": "string", "required": true },
+    "sortOrder": { "type": "integer", "default": 0 }
+  }
+}
+

@@ -1,0 +1,10 @@
+﻿{
+  "collectionName": "components_blocks_contact_blocks",
+  "info": { "displayName": "contactBlock" },
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "description": { "type": "text" },
+    "email": { "type": "email" }
+  }
+}
+

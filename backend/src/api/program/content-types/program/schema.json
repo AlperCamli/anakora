@@ -1,0 +1,46 @@
+﻿{
+  "kind": "collectionType",
+  "collectionName": "programs",
+  "info": {
+    "singularName": "program",
+    "pluralName": "programs",
+    "displayName": "Programs"
+  },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": { "i18n": { "localized": true } },
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "slug": { "type": "uid", "targetField": "title", "required": true },
+    "subtitle": { "type": "string" },
+    "shortDescription": { "type": "text" },
+    "story": { "type": "richtext" },
+    "status": { "type": "enumeration", "enum": ["draft", "published", "completed", "cancelled"], "default": "draft", "required": true },
+    "location": { "type": "string" },
+    "startDate": { "type": "date" },
+    "endDate": { "type": "date" },
+    "dateLabel": { "type": "string" },
+    "durationLabel": { "type": "string" },
+    "priceAmount": { "type": "decimal", "default": 0 },
+    "priceCurrency": { "type": "string", "default": "TRY" },
+    "capacity": { "type": "integer" },
+    "spotsLeft": { "type": "integer" },
+    "participantCount": { "type": "integer", "default": 0 },
+    "heroImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "gallery": { "type": "media", "multiple": true, "allowedTypes": ["images"] },
+    "guide": { "type": "component", "component": "common.guide", "repeatable": false },
+    "whoIsItFor": { "type": "component", "component": "common.text-item", "repeatable": true },
+    "programFlow": { "type": "component", "component": "common.day-flow", "repeatable": true },
+    "included": { "type": "component", "component": "common.text-item", "repeatable": true },
+    "notIncluded": { "type": "component", "component": "common.text-item", "repeatable": true },
+    "faqs": { "type": "component", "component": "common.faq-item", "repeatable": true },
+    "archiveSummary": { "type": "text" },
+    "isFeaturedHome": { "type": "boolean", "default": false },
+    "isFeaturedExperience": { "type": "boolean", "default": false },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category"
+    }
+  }
+}
+

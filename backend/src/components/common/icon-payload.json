@@ -1,0 +1,11 @@
+﻿{
+  "collectionName": "components_common_icon_payloads",
+  "info": { "displayName": "iconPayload" },
+  "attributes": {
+    "type": { "type": "enumeration", "enum": ["lucide", "svg"], "default": "lucide", "required": true },
+    "lucideName": { "type": "string" },
+    "svg": { "type": "media", "multiple": false, "allowedTypes": ["images", "files"] },
+    "alt": { "type": "string" }
+  }
+}
+

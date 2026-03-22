@@ -1,0 +1,36 @@
+﻿{
+  "kind": "singleType",
+  "collectionName": "site_settings",
+  "info": {
+    "singularName": "site-setting",
+    "pluralName": "site-settings",
+    "displayName": "Site Settings"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": false
+    }
+  },
+  "attributes": {
+    "brandName": { "type": "string", "required": true, "default": "ANAKORA" },
+    "contactEmail": { "type": "email", "required": true },
+    "instagramUrl": { "type": "string" },
+    "defaultSeo": { "type": "component", "component": "common.seo", "repeatable": false },
+    "footerCopyright": { "type": "string" },
+    "headerNavigation": { "type": "component", "component": "common.nav-item", "repeatable": true },
+    "footerNavigation": { "type": "component", "component": "common.nav-item", "repeatable": true },
+    "mobileStickyCta": { "type": "component", "component": "common.cta-block", "repeatable": false },
+    "spamProtectionEnabled": { "type": "boolean", "default": false },
+    "captchaProvider": { "type": "enumeration", "enum": ["none", "turnstile", "recaptcha"], "default": "none" },
+    "captchaSecretKey": { "type": "string", "private": true },
+    "legalPages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::legal-page.legal-page"
+    }
+  }
+}
+

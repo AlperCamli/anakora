@@ -1,0 +1,15 @@
+﻿# Backend (Strapi)
+/node_modules
+/.cache
+/.tmp
+/build
+.env
+
+# Local uploads
+/public/uploads
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+

@@ -1,0 +1,8 @@
+﻿{
+  "collectionName": "components_blocks_archive_stats_sections",
+  "info": { "displayName": "archiveStatsSection" },
+  "attributes": {
+    "items": { "type": "component", "component": "common.stat-item", "repeatable": true }
+  }
+}
+

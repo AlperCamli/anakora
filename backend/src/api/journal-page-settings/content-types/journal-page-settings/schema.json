@@ -1,0 +1,24 @@
+﻿{
+  "kind": "singleType",
+  "collectionName": "journal_page_settings",
+  "info": {
+    "singularName": "journal-page-setting",
+    "pluralName": "journal-page-settings",
+    "displayName": "Journal Page Settings"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "header": { "type": "component", "component": "blocks.section-header", "repeatable": false },
+    "newsletterCta": { "type": "component", "component": "common.cta-block", "repeatable": false },
+    "newsletterPlaceholder": { "type": "string", "default": "E-posta adresin" },
+    "newsletterButtonLabel": { "type": "string", "default": "Abone Ol" }
+  }
+}
+
