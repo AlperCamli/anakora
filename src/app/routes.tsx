@@ -7,7 +7,6 @@ import { ArchivePage } from "./pages/ArchivePage";
 import { JournalPage } from "./pages/JournalPage";
 import { JournalDetailPage } from "./pages/JournalDetailPage";
 import { AboutPage } from "./pages/AboutPage";
-import { LegalPage } from "./pages/LegalPage";
 
 export const router = createBrowserRouter([
   {
@@ -16,13 +15,11 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: HomePage },
       { path: "deneyimler", Component: ExperiencesPage },
-      { path: "deneyimler/:id", Component: ProgramDetailPage },
+      { path: "deneyimler/:slug", Component: ProgramDetailPage },
       { path: "arsiv", Component: ArchivePage },
       { path: "jurnal", Component: JournalPage },
       { path: "jurnal/:slug", Component: JournalDetailPage },
       { path: "hakkinda", Component: AboutPage },
-      { path: "gizlilik", Component: LegalPage },
-      { path: "sartlar", Component: LegalPage },
     ],
   },
 ]);

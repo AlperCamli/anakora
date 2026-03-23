@@ -1,8 +1,0 @@
-﻿{
-  "collectionName": "components_common_text_items",
-  "info": { "displayName": "textItem" },
-  "attributes": {
-    "text": { "type": "string", "required": true }
-  }
-}
-

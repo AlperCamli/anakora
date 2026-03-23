@@ -9,6 +9,7 @@ interface ExperienceCardProps {
   image: string;
   description: string;
   featured?: boolean;
+  ctaLabel?: string;
 }
 
 export function ExperienceCard({
@@ -18,6 +19,7 @@ export function ExperienceCard({
   image,
   description,
   featured = false,
+  ctaLabel = "Deneyimi Incele",
 }: ExperienceCardProps) {
   return (
     <motion.div
@@ -42,11 +44,9 @@ export function ExperienceCard({
               {category}
             </p>
             <h3 className="text-2xl lg:text-3xl font-serif mb-3">{title}</h3>
-            <p className="text-sm opacity-90 line-clamp-2 mb-4">
-              {description}
-            </p>
+            <p className="text-sm opacity-90 line-clamp-2 mb-4">{description}</p>
             <div className="flex items-center gap-2 text-sm font-medium group-hover:gap-3 transition-all">
-              Deneyimi İncele
+              {ctaLabel}
               <ArrowRight size={16} />
             </div>
           </div>

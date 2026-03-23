@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 
 interface ProgramCardProps {
@@ -11,6 +11,9 @@ interface ProgramCardProps {
   image: string;
   category: string;
   spotsLeft?: number;
+  spotsLeftLabel?: string;
+  ctaLabel?: string;
+  separator?: string;
 }
 
 export function ProgramCard({
@@ -22,6 +25,9 @@ export function ProgramCard({
   image,
   category,
   spotsLeft,
+  spotsLeftLabel = "yer kaldi",
+  ctaLabel = "Yerini Ayirt",
+  separator = "-",
 }: ProgramCardProps) {
   return (
     <motion.div
@@ -40,7 +46,7 @@ export function ProgramCard({
           />
           {spotsLeft && spotsLeft <= 3 && (
             <div className="absolute top-4 right-4 px-3 py-1.5 bg-accent text-accent-foreground text-xs font-medium rounded-full">
-              {spotsLeft} yer kaldı
+              {spotsLeft} {spotsLeftLabel}
             </div>
           )}
         </div>
@@ -55,7 +61,7 @@ export function ProgramCard({
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-secondary" />
               <span>{date}</span>
-              <span className="text-border">•</span>
+              <span className="text-border">{separator}</span>
               <span>{duration}</span>
             </div>
             <div className="flex items-center gap-2">
@@ -64,7 +70,7 @@ export function ProgramCard({
             </div>
           </div>
           <button className="w-full py-2.5 border border-primary text-primary rounded-sm text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-all duration-300">
-            Yerini Ayırt
+            {ctaLabel}
           </button>
         </div>
       </Link>

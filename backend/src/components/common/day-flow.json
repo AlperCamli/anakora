@@ -1,9 +1,0 @@
-﻿{
-  "collectionName": "components_common_day_flows",
-  "info": { "displayName": "dayFlow" },
-  "attributes": {
-    "dayTitle": { "type": "string", "required": true },
-    "activities": { "type": "json", "required": true }
-  }
-}
-

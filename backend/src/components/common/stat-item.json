@@ -1,9 +1,0 @@
-﻿{
-  "collectionName": "components_common_stat_items",
-  "info": { "displayName": "statItem" },
-  "attributes": {
-    "value": { "type": "string", "required": true },
-    "label": { "type": "string", "required": true }
-  }
-}
-

@@ -1,9 +1,0 @@
-﻿{
-  "collectionName": "components_common_faq_items",
-  "info": { "displayName": "faqItem" },
-  "attributes": {
-    "question": { "type": "string", "required": true },
-    "answer": { "type": "text", "required": true }
-  }
-}
-

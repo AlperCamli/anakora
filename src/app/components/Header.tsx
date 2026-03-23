@@ -1,18 +1,14 @@
-﻿import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
 import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { type LayoutDTO } from "../lib/public-api";
+import { AnimatePresence, motion } from "motion/react";
+import { useSiteData } from "../context/SiteDataContext";
 
-interface HeaderProps {
-  layout?: LayoutDTO | null;
-}
-
-export function Header({ layout }: HeaderProps) {
+export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<"TR" | "EN">("TR");
   const location = useLocation();
+  const { locale, setLocale, layout } = useSiteData();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,20 +22,27 @@ export function Header({ layout }: HeaderProps) {
     setIsMobileMenuOpen(false);
   }, [location]);
 
-  const fallbackNavigation = [
-    { name: "Deneyimler", href: "/deneyimler" },
-    { name: "Arsiv", href: "/arsiv" },
-    { name: "Jurnal", href: "/jurnal" },
-    { name: "Hakkinda", href: "/hakkinda" },
-  ];
-
   const navigation =
-    layout?.headerNavigation?.length
-      ? layout.headerNavigation.map((item) => ({
-          name: item.label,
-          href: item.url,
-        }))
-      : fallbackNavigation;
+    layout?.navigation?.length && layout.navigation.length > 0
+      ? layout.navigation
+      : [
+          {
+            label: locale === "en" ? "Experiences" : "Deneyimler",
+            href: "/deneyimler",
+          },
+          {
+            label: locale === "en" ? "Archive" : "Arsiv",
+            href: "/arsiv",
+          },
+          {
+            label: locale === "en" ? "Journal" : "Jurnal",
+            href: "/jurnal",
+          },
+          {
+            label: locale === "en" ? "About" : "Hakkinda",
+            href: "/hakkinda",
+          },
+        ];
 
   return (
     <>
@@ -56,7 +59,7 @@ export function Header({ layout }: HeaderProps) {
               to="/"
               className="text-2xl lg:text-3xl font-serif tracking-wide text-foreground hover:text-primary transition-colors"
             >
-              {layout?.brandName || "ANAKORA"}
+              {layout?.logoText ?? layout?.siteName ?? "ANAKORA"}
             </Link>
 
             <nav className="hidden md:flex items-center gap-8">
@@ -70,7 +73,7 @@ export function Header({ layout }: HeaderProps) {
                       : "text-foreground/80 hover:text-primary"
                   }`}
                 >
-                  {item.name}
+                  {item.label}
                 </Link>
               ))}
             </nav>
@@ -78,9 +81,9 @@ export function Header({ layout }: HeaderProps) {
             <div className="flex items-center gap-4 lg:gap-6">
               <div className="flex items-center gap-1 text-sm">
                 <button
-                  onClick={() => setLanguage("TR")}
+                  onClick={() => setLocale("tr")}
                   className={`px-2 py-1 transition-colors ${
-                    language === "TR"
+                    locale === "tr"
                       ? "text-primary font-medium"
                       : "text-foreground/60 hover:text-foreground"
                   }`}
@@ -89,9 +92,9 @@ export function Header({ layout }: HeaderProps) {
                 </button>
                 <span className="text-foreground/40">/</span>
                 <button
-                  onClick={() => setLanguage("EN")}
+                  onClick={() => setLocale("en")}
                   className={`px-2 py-1 transition-colors ${
-                    language === "EN"
+                    locale === "en"
                       ? "text-primary font-medium"
                       : "text-foreground/60 hover:text-foreground"
                   }`}
@@ -104,7 +107,7 @@ export function Header({ layout }: HeaderProps) {
                 to="/deneyimler"
                 className="hidden md:inline-flex px-6 py-2.5 bg-primary text-primary-foreground rounded-sm hover:bg-accent transition-all duration-300 text-sm tracking-wide"
               >
-                Programlari Kesfet
+                {locale === "en" ? "Explore Programs" : "Programlari Kesfet"}
               </Link>
 
               <button
@@ -139,14 +142,14 @@ export function Header({ layout }: HeaderProps) {
                       : "text-foreground/80"
                   }`}
                 >
-                  {item.name}
+                  {item.label}
                 </Link>
               ))}
               <Link
                 to="/deneyimler"
                 className="mt-2 px-6 py-3 bg-primary text-primary-foreground rounded-sm text-center text-sm tracking-wide"
               >
-                Programlari Kesfet
+                {locale === "en" ? "Explore Programs" : "Programlari Kesfet"}
               </Link>
             </nav>
           </motion.div>
@@ -155,4 +158,3 @@ export function Header({ layout }: HeaderProps) {
     </>
   );
 }
-

@@ -1,36 +1,22 @@
-﻿# Premium Personal Brand Website
 
-This project now contains:
-- Frontend: Vite + React (`/`)
-- Backend: Strapi + Postgres (`/backend`)
+  # Premium Personal Brand Website
 
-Original Figma source:
-https://www.figma.com/design/E0OHjZe1xDtxTkUX4JzqfG/Premium-Personal-Brand-Website
+  This is a code bundle for Premium Personal Brand Website. The original project is available at https://www.figma.com/design/E0OHjZe1xDtxTkUX4JzqfG/Premium-Personal-Brand-Website.
 
-## Frontend
+  ## Running the code
 
-Install and run:
+  Run `npm i` to install the dependencies.
 
-```bash
-npm install
-npm run dev
-```
+  Run `npm run dev` to start the development server.
 
-Optional frontend env (`.env`):
+  ## Supabase foundation
 
-```bash
-VITE_API_BASE_URL=http://localhost:1337/api
-```
-
-## Backend (Strapi)
-
-See [backend/README.md](backend/README.md).
-
-Quick start:
-
-```bash
-cd backend
-cp .env.example .env
-npm install
-npm run develop
-```
+  - Environment scaffold: `.env.example`
+  - Setup and usage guide: `docs/supabase-setup.md`
+  - Repository audit: `docs/repo-audit.md`
+  - Integration roadmap: `docs/integration-plan.md`
+  - Schema documentation: `docs/schema.md`
+  - Server data-layer documentation: `docs/data-layer.md`
+  - Public binding notes: `docs/public-binding.md`
+  - Form submission notes: `docs/forms.md`
+  

@@ -1,16 +1,13 @@
-﻿import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
 import { ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { type LayoutDTO } from "../lib/public-api";
+import { AnimatePresence, motion } from "motion/react";
+import { useSiteData } from "../context/SiteDataContext";
 
-interface MobileStickyCTAProps {
-  layout?: LayoutDTO | null;
-}
-
-export function MobileStickyCTA({ layout }: MobileStickyCTAProps) {
+export function MobileStickyCTA() {
   const [isVisible, setIsVisible] = useState(false);
   const location = useLocation();
+  const { locale } = useSiteData();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,11 +22,6 @@ export function MobileStickyCTA({ layout }: MobileStickyCTAProps) {
     return null;
   }
 
-  const cta = layout?.mobileStickyCta?.primaryButton || {
-    label: "Deneyimleri Kesfet",
-    url: "/deneyimler",
-  };
-
   return (
     <AnimatePresence>
       {isVisible && (
@@ -41,10 +33,10 @@ export function MobileStickyCTA({ layout }: MobileStickyCTAProps) {
           className="md:hidden fixed bottom-0 left-0 right-0 z-40 p-4 bg-background/95 backdrop-blur-md border-t border-border shadow-lg"
         >
           <Link
-            to={cta.url}
+            to="/deneyimler"
             className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-primary text-primary-foreground rounded-sm text-sm font-medium tracking-wide"
           >
-            {cta.label}
+            {locale === "en" ? "Explore Experiences" : "Deneyimleri Kesfet"}
             <ArrowRight size={18} />
           </Link>
         </motion.div>

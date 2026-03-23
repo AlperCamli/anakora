@@ -1,84 +1,125 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Filter } from "lucide-react";
 import { ProgramCard } from "../components/ProgramCard";
-import { getPublic, resolveMediaUrl } from "../lib/public-api";
-
-type ExperiencesDTO = {
-  header?: { title?: string; description?: string };
-  contact?: { title?: string; description?: string; email?: string };
-  filters: Array<{ id: string; label: string }>;
-  items: Array<{
-    slug: string;
-    title: string;
-    location: string;
-    date: string;
-    duration: string;
-    category: string;
-    categorySlug?: string;
-    image?: { url: string } | null;
-    spotsLeft?: number | null;
-  }>;
-};
+import { useSiteData } from "../context/SiteDataContext";
+import { submitLeadSubmission } from "../lib/lead-submissions";
+import { toProgramCardViewModel } from "../lib/formatters";
+import { getProgramsList, type ProgramCardDTO } from "../../server/data";
 
 export function ExperiencesPage() {
+  const { locale } = useSiteData();
   const [activeFilter, setActiveFilter] = useState<string>("all");
-  const [data, setData] = useState<ExperiencesDTO | null>(null);
+  const [programs, setPrograms] = useState<ProgramCardDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactHoneypot, setContactHoneypot] = useState("");
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
+  const [contactSuccess, setContactSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
 
-    getPublic<ExperiencesDTO>("experiences", { pageSize: 50 })
-      .then((payload) => {
-        if (mounted) {
-          setData(payload);
+    async function run() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getProgramsList(locale, {
+          statuses: ["upcoming", "published"],
+        });
+        if (!isMounted) {
+          return;
         }
-      })
-      .catch(() => {
-        // Keep existing UI usable with empty state when backend is unavailable.
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const filters = useMemo(() => {
-    const fromApi = (data?.filters || []).map((filter) => ({
-      id: filter.id,
-      label: filter.label,
-    }));
-
-    if (!fromApi.length) {
-      return [{ id: "all", label: "Tumu" }];
+        setPrograms(data);
+      } catch (fetchError) {
+        if (!isMounted) {
+          return;
+        }
+        setError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Program verileri alinamadi.",
+        );
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     }
 
-    return [{ id: "all", label: "Tumu" }, ...fromApi];
-  }, [data]);
+    run();
+    return () => {
+      isMounted = false;
+    };
+  }, [locale]);
 
-  const programs = useMemo(() => {
-    return (data?.items || []).map((item) => ({
-      id: item.slug,
-      title: item.title,
-      location: item.location,
-      date: item.date,
-      duration: item.duration,
-      category: item.category,
-      filter: item.categorySlug || "",
-      image: resolveMediaUrl(item.image as any) || "",
-      spotsLeft: item.spotsLeft || undefined,
-    }));
-  }, [data]);
+  const filters = useMemo(() => {
+    const base = [{ id: "all", label: locale === "en" ? "All" : "Tumu" }];
+    const dynamic = Array.from(
+      new Map(
+        programs
+          .flatMap((program) => program.categories)
+          .map((category) => [category.slug, { id: category.slug, label: category.name }]),
+      ).values(),
+    );
+    return [...base, ...dynamic];
+  }, [locale, programs]);
 
-  const filteredPrograms =
-    activeFilter === "all"
-      ? programs
-      : programs.filter((program) => program.filter === activeFilter);
+  const filteredPrograms = useMemo(() => {
+    if (activeFilter === "all") {
+      return programs;
+    }
+    return programs.filter((program) =>
+      program.categories.some((category) => category.slug === activeFilter),
+    );
+  }, [activeFilter, programs]);
 
-  const headerTitle = data?.header?.title || "Deneyimler";
-  const headerDescription =
-    data?.header?.description ||
-    "Her biri ozenle tasarlanmis, donusturucu doga deneyimleri.";
+  async function handleContactSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setContactError(null);
+    setContactSuccess(null);
+    setContactSubmitting(true);
+
+    const result = await submitLeadSubmission({
+      source: "general_contact",
+      locale,
+      fullName: contactName,
+      email: contactEmail,
+      message: contactMessage,
+      honeypot: contactHoneypot,
+      metadata: {
+        surface: "experiences_contact_section",
+      },
+    });
+
+    setContactSubmitting(false);
+    if (!result.ok) {
+      setContactError(
+        result.fieldErrors?.fullName ??
+          result.fieldErrors?.email ??
+          result.errorMessage ??
+          (locale === "en"
+            ? "Message could not be sent right now."
+            : "Mesaj su an gonderilemedi."),
+      );
+      return;
+    }
+
+    setContactName("");
+    setContactEmail("");
+    setContactMessage("");
+    setContactHoneypot("");
+    setContactSuccess(
+      locale === "en"
+        ? "Thanks, we will contact you shortly."
+        : "Tesekkurler, en kisa surede sizinle iletisime gececegiz.",
+    );
+  }
 
   return (
     <div className="pt-20 lg:pt-24 min-h-screen bg-background">
@@ -90,9 +131,13 @@ export function ExperiencesPage() {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <h1 className="text-4xl lg:text-6xl font-serif mb-6">{headerTitle}</h1>
+            <h1 className="text-4xl lg:text-6xl font-serif mb-6">
+              {locale === "en" ? "Experiences" : "Deneyimler"}
+            </h1>
             <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
-              {headerDescription}
+              {locale === "en"
+                ? "Carefully curated, transformational nature experiences."
+                : "Ozenle tasarlanmis, donusturucu doga deneyimleri."}
             </p>
           </motion.div>
         </div>
@@ -121,39 +166,118 @@ export function ExperiencesPage() {
 
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 text-sm text-muted-foreground">
-            {filteredPrograms.length} program bulundu
-          </div>
+          {loading && (
+            <p className="mb-6 text-sm text-muted-foreground">
+              {locale === "en" ? "Loading programs..." : "Programlar yukleniyor..."}
+            </p>
+          )}
+          {error && (
+            <p className="mb-6 text-sm text-destructive">
+              {locale === "en"
+                ? "Programs could not be loaded."
+                : "Programlar su an yuklenemedi."}
+            </p>
+          )}
+          {!loading && !error && (
+            <div className="mb-6 text-sm text-muted-foreground">
+              {filteredPrograms.length}{" "}
+              {locale === "en" ? "programs found" : "program bulundu"}
+            </div>
+          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {filteredPrograms.map((program, index) => (
-              <motion.div
-                key={program.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <ProgramCard {...program} />
-              </motion.div>
-            ))}
-          </div>
+          {!loading && !error && filteredPrograms.length === 0 && (
+            <div className="rounded-sm border border-border p-6 text-sm text-muted-foreground">
+              {locale === "en"
+                ? "No programs match this filter yet."
+                : "Bu filtre icin henuz program bulunmuyor."}
+            </div>
+          )}
+
+          {!loading && !error && filteredPrograms.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {filteredPrograms.map((program, index) => (
+                <motion.div
+                  key={program.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                >
+                  <ProgramCard {...toProgramCardViewModel(program, locale)} />
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       <section className="py-16 lg:py-20 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl lg:text-4xl font-serif mb-4">
-            {data?.contact?.title || "Programlar Hakkinda Soru mu Var?"}
+            {locale === "en"
+              ? "Need help choosing your program?"
+              : "Programlar hakkinda soru mu var?"}
           </h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            {data?.contact?.description || "Size en uygun deneyimi bulmak icin buradayiz"}
+            {locale === "en"
+              ? "Send us a quick note and we will guide you."
+              : "Kisa bir mesaj birakin, size en uygun deneyimi birlikte bulalim."}
           </p>
-          <a
-            href={`mailto:${data?.contact?.email || "hello@anakora.com"}`}
-            className="inline-flex px-8 py-3 bg-primary text-primary-foreground rounded-sm hover:bg-accent transition-all duration-300 text-base font-medium tracking-wide"
+
+          <form
+            onSubmit={handleContactSubmit}
+            className="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 text-left"
           >
-            Bize Ulasin
-          </a>
+            <input
+              type="text"
+              value={contactHoneypot}
+              onChange={(event) => setContactHoneypot(event.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              className="hidden"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              value={contactName}
+              onChange={(event) => setContactName(event.target.value)}
+              placeholder={locale === "en" ? "Full name" : "Adiniz soyadiniz"}
+              className="px-4 py-3 border border-border rounded-sm bg-background"
+            />
+            <input
+              type="email"
+              value={contactEmail}
+              onChange={(event) => setContactEmail(event.target.value)}
+              placeholder={locale === "en" ? "Email" : "E-posta"}
+              className="px-4 py-3 border border-border rounded-sm bg-background"
+            />
+            <textarea
+              value={contactMessage}
+              onChange={(event) => setContactMessage(event.target.value)}
+              placeholder={locale === "en" ? "Your message" : "Mesajiniz"}
+              rows={4}
+              className="sm:col-span-2 px-4 py-3 border border-border rounded-sm bg-background resize-none"
+            />
+            <button
+              type="submit"
+              disabled={contactSubmitting}
+              className="sm:col-span-2 inline-flex justify-center px-8 py-3 bg-primary text-primary-foreground rounded-sm hover:bg-accent transition-all duration-300 text-base font-medium tracking-wide disabled:opacity-70"
+            >
+              {contactSubmitting
+                ? locale === "en"
+                  ? "Sending..."
+                  : "Gonderiliyor..."
+                : locale === "en"
+                  ? "Send Message"
+                  : "Mesaji Gonder"}
+            </button>
+          </form>
+
+          {contactError && (
+            <p className="mt-3 text-sm text-destructive">{contactError}</p>
+          )}
+          {contactSuccess && (
+            <p className="mt-3 text-sm text-primary">{contactSuccess}</p>
+          )}
         </div>
       </section>
     </div>

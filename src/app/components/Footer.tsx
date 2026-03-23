@@ -1,59 +1,78 @@
-﻿import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { Instagram, Mail } from "lucide-react";
-import { postPublic, type LayoutDTO } from "../lib/public-api";
+import { useSiteData } from "../context/SiteDataContext";
+import { submitLeadSubmission } from "../lib/lead-submissions";
 
-interface FooterProps {
-  layout?: LayoutDTO | null;
-}
+export function Footer() {
+  const { locale, layout } = useSiteData();
+  const [email, setEmail] = useState("");
+  const [honeypot, setHoneypot] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
-export function Footer({ layout }: FooterProps) {
-  const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterStatus, setNewsletterStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
-
-  const footerLinks =
-    layout?.footerNavigation?.length
-      ? layout.footerNavigation.map((item) => ({
-          label: item.label,
-          href: item.url,
-        }))
+  const links =
+    layout?.navigation?.length && layout.navigation.length > 0
+      ? layout.navigation
       : [
-          { label: "Deneyimler", href: "/deneyimler" },
-          { label: "Arsiv", href: "/arsiv" },
-          { label: "Jurnal", href: "/jurnal" },
-          { label: "Hakkinda", href: "/hakkinda" },
+          {
+            label: locale === "en" ? "Experiences" : "Deneyimler",
+            href: "/deneyimler",
+          },
+          { label: locale === "en" ? "Archive" : "Arsiv", href: "/arsiv" },
+          { label: locale === "en" ? "Journal" : "Jurnal", href: "/jurnal" },
+          { label: locale === "en" ? "About" : "Hakkinda", href: "/hakkinda" },
         ];
 
   const legalLinks =
-    layout?.legalLinks?.length
-      ? layout.legalLinks.map((item) => ({
-          label: item.title,
-          href: `/${item.slug}`,
-        }))
+    layout?.legalLinks?.length && layout.legalLinks.length > 0
+      ? layout.legalLinks
       : [
-          { label: "Gizlilik Politikasi", href: "/gizlilik" },
-          { label: "Kullanim Sartlari", href: "/sartlar" },
+          {
+            label: locale === "en" ? "Privacy Policy" : "Gizlilik Politikasi",
+            href: "/gizlilik",
+          },
+          {
+            label: locale === "en" ? "Terms of Use" : "Kullanim Sartlari",
+            href: "/sartlar",
+          },
         ];
 
-  const onSubmitNewsletter = async (event: FormEvent<HTMLFormElement>) => {
+  async function handleNewsletterSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setNewsletterStatus("loading");
+    setFormError(null);
+    setFormSuccess(null);
+    setIsSubmitting(true);
 
-    try {
-      await postPublic("leads/newsletter", {
-        email: newsletterEmail,
-        consent: true,
-        sourceUrl: window.location.pathname,
-      });
+    const result = await submitLeadSubmission({
+      source: "newsletter",
+      locale,
+      email,
+      honeypot,
+      consentMarketing: true,
+      metadata: { surface: "footer_newsletter" },
+    });
 
-      setNewsletterStatus("success");
-      setNewsletterEmail("");
-    } catch {
-      setNewsletterStatus("error");
+    setIsSubmitting(false);
+
+    if (!result.ok) {
+      setFormError(
+        result.fieldErrors?.email ??
+          result.errorMessage ??
+          "Abonelik su an tamamlanamadi.",
+      );
+      return;
     }
-  };
+
+    setEmail("");
+    setHoneypot("");
+    setFormSuccess(
+      locale === "en"
+        ? "Thanks, you're subscribed."
+        : "Tesekkurler, aboneliginiz alindi.",
+    );
+  }
 
   return (
     <footer className="bg-primary text-primary-foreground py-16 lg:py-20">
@@ -61,20 +80,22 @@ export function Footer({ layout }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div className="lg:col-span-1">
             <h3 className="text-2xl lg:text-3xl font-serif mb-4">
-              {layout?.brandName || "ANAKORA"}
+              {layout?.logoText ?? layout?.siteName ?? "ANAKORA"}
             </h3>
             <p className="text-sm text-primary-foreground/80 leading-relaxed max-w-xs">
-              Biz tur/kamp/tatil satmiyoruz, birlikte yasanacak bir deneyim
-              sunuyoruz.
+              {layout?.tagline ??
+                (locale === "en"
+                  ? "We curate experiences to be lived together."
+                  : "Birlikte yasanacak deneyimler sunuyoruz.")}
             </p>
           </div>
 
           <div>
             <h4 className="font-medium mb-4 text-sm tracking-wide uppercase">
-              Kesfet
+              {locale === "en" ? "Explore" : "Kesfet"}
             </h4>
             <nav className="flex flex-col gap-3">
-              {footerLinks.map((item) => (
+              {links.map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
@@ -88,66 +109,93 @@ export function Footer({ layout }: FooterProps) {
 
           <div>
             <h4 className="font-medium mb-4 text-sm tracking-wide uppercase">
-              Iletisim
+              {locale === "en" ? "Contact" : "Iletisim"}
             </h4>
             <div className="flex flex-col gap-3">
-              <a
-                href={`mailto:${layout?.contact?.email || "hello@anakora.com"}`}
-                className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors flex items-center gap-2"
-              >
-                <Mail size={16} />
-                {layout?.contact?.email || "hello@anakora.com"}
-              </a>
-              <a
-                href={layout?.contact?.instagramUrl || "https://instagram.com/anakora"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors flex items-center gap-2"
-              >
-                <Instagram size={16} />
-                @anakora
-              </a>
+              {layout?.contactEmail && (
+                <a
+                  href={`mailto:${layout.contactEmail}`}
+                  className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors flex items-center gap-2"
+                >
+                  <Mail size={16} />
+                  {layout.contactEmail}
+                </a>
+              )}
+              {layout?.instagramUrl && (
+                <a
+                  href={layout.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors flex items-center gap-2"
+                >
+                  <Instagram size={16} />
+                  {layout.instagramUrl.replace("https://instagram.com/", "@")}
+                </a>
+              )}
             </div>
           </div>
 
-          <div>
-            <h4 className="font-medium mb-4 text-sm tracking-wide uppercase">
-              Bulten
-            </h4>
-            <p className="text-sm text-primary-foreground/80 mb-4">
-              Yeni deneyimlerden haberdar ol
-            </p>
-            <form className="flex flex-col gap-2" onSubmit={onSubmitNewsletter}>
-              <input
-                type="email"
-                value={newsletterEmail}
-                onChange={(event) => {
-                  setNewsletterEmail(event.target.value);
-                  setNewsletterStatus("idle");
-                }}
-                required
-                placeholder="E-posta adresin"
-                className="px-4 py-2.5 bg-primary-foreground/10 border border-primary-foreground/20 rounded-sm text-sm placeholder:text-primary-foreground/50 focus:outline-none focus:border-primary-foreground/40 transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={newsletterStatus === "loading"}
-                className="px-4 py-2.5 bg-primary-foreground text-primary rounded-sm text-sm font-medium hover:bg-primary-foreground/90 transition-colors disabled:opacity-70"
-              >
-                {newsletterStatus === "loading" ? "Gonderiliyor..." : "Abone Ol"}
-              </button>
-            </form>
-            {newsletterStatus === "success" && (
-              <p className="text-xs mt-2 text-primary-foreground/80">Basariyla kaydedildi.</p>
-            )}
-            {newsletterStatus === "error" && (
-              <p className="text-xs mt-2 text-primary-foreground/80">Bir hata olustu.</p>
-            )}
-          </div>
+          {layout?.footerNewsletterEnabled !== false && (
+            <div>
+              <h4 className="font-medium mb-4 text-sm tracking-wide uppercase">
+                {locale === "en" ? "Newsletter" : "Bulten"}
+              </h4>
+              <p className="text-sm text-primary-foreground/80 mb-4">
+                {locale === "en"
+                  ? "Get updates about new experiences."
+                  : "Yeni deneyimlerden haberdar ol."}
+              </p>
+              <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={honeypot}
+                  onChange={(event) => setHoneypot(event.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  className="hidden"
+                  aria-hidden="true"
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder={locale === "en" ? "Your email" : "E-posta adresin"}
+                  className="px-4 py-2.5 bg-primary-foreground/10 border border-primary-foreground/20 rounded-sm text-sm placeholder:text-primary-foreground/50 focus:outline-none focus:border-primary-foreground/40 transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2.5 bg-primary-foreground text-primary rounded-sm text-sm font-medium hover:bg-primary-foreground/90 transition-colors disabled:opacity-70"
+                >
+                  {isSubmitting
+                    ? locale === "en"
+                      ? "Submitting..."
+                      : "Gonderiliyor..."
+                    : locale === "en"
+                      ? "Subscribe"
+                      : "Abone Ol"}
+                </button>
+                {formError && (
+                  <p className="text-xs text-destructive-foreground bg-destructive/70 rounded-sm px-2 py-1 mt-1">
+                    {formError}
+                  </p>
+                )}
+                {formSuccess && (
+                  <p className="text-xs text-primary bg-primary-foreground/90 rounded-sm px-2 py-1 mt-1">
+                    {formSuccess}
+                  </p>
+                )}
+              </form>
+            </div>
+          )}
         </div>
 
         <div className="mt-12 pt-8 border-t border-primary-foreground/20 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/60">
-          <p>{layout?.footerCopyright || "© 2026 ANAKORA. Tum haklari saklidir."}</p>
+          <p>
+            {locale === "en"
+              ? "(c) 2026 ANAKORA. All rights reserved."
+              : "(c) 2026 ANAKORA. Tum haklari saklidir."}
+          </p>
           <div className="flex gap-6">
             {legalLinks.map((item) => (
               <Link
@@ -164,5 +212,4 @@ export function Footer({ layout }: FooterProps) {
     </footer>
   );
 }
-
 
