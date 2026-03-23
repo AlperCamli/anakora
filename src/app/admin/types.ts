@@ -5,6 +5,18 @@ export type AppLocale = "tr" | "en";
 export type ProgramStatus = "upcoming" | "published" | "completed" | "cancelled";
 
 export type BookingMode = "direct" | "application" | "external";
+export type JournalPostStatus = "draft" | "published" | "archived";
+
+export type HomepageSectionKey =
+  | "hero"
+  | "brand_manifesto"
+  | "experience_categories"
+  | "upcoming_programs"
+  | "why_anakora"
+  | "archive_preview"
+  | "testimonials"
+  | "journal_preview"
+  | "final_cta";
 
 export type LeadSource =
   | "newsletter"
@@ -37,6 +49,12 @@ export interface GuideOption {
   id: string;
   slug: string;
   name: string;
+}
+
+export interface ProgramOption {
+  id: string;
+  slug: string;
+  title: string;
 }
 
 export interface ProgramTranslationValue {
@@ -175,4 +193,159 @@ export interface DashboardOverview {
   totalLeads: number;
   newLeads: number;
   inProgressLeads: number;
+}
+
+export interface TestimonialTranslationValue {
+  authorName: string;
+  authorTitle: string;
+  quote: string;
+}
+
+export interface TestimonialEditorValue {
+  id?: string;
+  slug: string;
+  primaryProgramId: string;
+  linkedProgramIds: string[];
+  guideId: string;
+  authorImageUrl: string;
+  rating: string;
+  testimonialDate: string;
+  isFeatured: boolean;
+  isPublished: boolean;
+  sortOrder: string;
+  tr: TestimonialTranslationValue;
+  en: TestimonialTranslationValue;
+}
+
+export interface TestimonialListItem {
+  id: string;
+  slug: string | null;
+  primaryProgramId: string | null;
+  linkedProgramCount: number;
+  guideId: string | null;
+  rating: number;
+  testimonialDate: string | null;
+  isFeatured: boolean;
+  isPublished: boolean;
+  sortOrder: number;
+  trAuthorName: string | null;
+  enAuthorName: string | null;
+  trQuote: string | null;
+  enQuote: string | null;
+  updatedAt: string;
+}
+
+export interface JournalPostTranslationValue {
+  title: string;
+  excerpt: string;
+  contentMarkdown: string;
+  coverImageAlt: string;
+  seoTitle: string;
+  seoDescription: string;
+}
+
+export interface JournalPostEditorValue {
+  id?: string;
+  slug: string;
+  status: JournalPostStatus;
+  coverImageUrl: string;
+  isFeatured: boolean;
+  readingTimeMinutes: string;
+  publishedAt: string;
+  primaryGuideId: string;
+  categoryIds: string[];
+  tr: JournalPostTranslationValue;
+  en: JournalPostTranslationValue;
+}
+
+export interface JournalPostListItem {
+  id: string;
+  slug: string;
+  status: JournalPostStatus;
+  coverImageUrl: string | null;
+  isFeatured: boolean;
+  readingTimeMinutes: number | null;
+  publishedAt: string | null;
+  categoryCount: number;
+  trTitle: string | null;
+  enTitle: string | null;
+  updatedAt: string;
+}
+
+export interface JournalCategoryEditorValue {
+  id?: string;
+  slug: string;
+  sortOrder: string;
+  isFeatured: boolean;
+  isActive: boolean;
+  trName: string;
+  trDescription: string;
+  enName: string;
+  enDescription: string;
+}
+
+export interface JournalCategoryListItem {
+  id: string;
+  slug: string;
+  sortOrder: number;
+  isFeatured: boolean;
+  isActive: boolean;
+  trName: string | null;
+  enName: string | null;
+  updatedAt: string;
+}
+
+export interface HomepageSectionLocaleValue {
+  id?: string;
+  title: string;
+  subtitle: string;
+  payloadJson: string;
+  mediaUrl: string;
+  mediaAlt: string;
+  isActive: boolean;
+  sortOrder: string;
+}
+
+export interface HomepageSectionEditorValue {
+  key: HomepageSectionKey;
+  tr: HomepageSectionLocaleValue;
+  en: HomepageSectionLocaleValue;
+}
+
+export interface SiteSettingsLocaleValue {
+  id?: string;
+  locale: AppLocale;
+  siteName: string;
+  logoText: string;
+  tagline: string;
+  contactEmail: string;
+  contactPhone: string;
+  instagramUrl: string;
+  defaultSeoTitle: string;
+  defaultSeoDescription: string;
+  globalSeoImageUrl: string;
+  reservationNotificationEmail: string;
+  headerNavigationJson: string;
+  footerLegalLinksJson: string;
+  socialLinksJson: string;
+  notificationSettingsJson: string;
+  footerNewsletterEnabled: boolean;
+}
+
+export interface SiteSettingsEditorValue {
+  tr: SiteSettingsLocaleValue;
+  en: SiteSettingsLocaleValue;
+}
+
+export type MediaVisibility = "public" | "private";
+
+export interface MediaLibraryItem {
+  bucket: string;
+  path: string;
+  name: string;
+  size: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  publicUrl: string | null;
+  reference: string;
 }

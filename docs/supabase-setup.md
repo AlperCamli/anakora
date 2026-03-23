@@ -26,6 +26,8 @@ Required for browser/public usage:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_ENABLE_CAPTCHA` (optional feature toggle, default `false`)
+- `VITE_SUPABASE_STORAGE_BUCKET_PUBLIC` (optional override)
+- `VITE_SUPABASE_STORAGE_BUCKET_PRIVATE` (optional override)
 
 Required for trusted server/admin usage:
 - `SUPABASE_URL`
@@ -67,6 +69,7 @@ const supabaseAdmin = createSupabaseAdminClient();
 - Keep all admin/service-role operations behind server endpoints or server jobs.
 - Enforce RLS policies even for anon/public read paths.
 - Do not hardcode keys in source files.
+- Storage object access in admin UI is controlled by storage RLS policies.
 
 ## Local run checklist
 1. Create `.env.local` from `.env.example` and fill real values.
@@ -86,6 +89,8 @@ const supabaseAdmin = createSupabaseAdminClient();
 - Migration:
   - `supabase/migrations/20260323050000_anakora_content_model.sql`
   - `supabase/migrations/20260323101500_public_site_rls.sql` (public read + lead insert policies)
+  - `supabase/migrations/20260323120000_admin_cms_rls.sql`
+  - `supabase/migrations/20260323133000_admin_role_storage_hardening.sql`
 - Optional seed scaffold:
   - `supabase/seeds/20260323051000_anakora_seed_scaffold.sql`
 

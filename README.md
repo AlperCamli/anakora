@@ -13,10 +13,16 @@
 
   - Environment scaffold: `.env.example`
   - Setup and usage guide: `docs/supabase-setup.md`
+  - Environment setup (MVP): `docs/environment-setup.md`
   - Repository audit: `docs/repo-audit.md`
   - Integration roadmap: `docs/integration-plan.md`
   - Schema documentation: `docs/schema.md`
   - Server data-layer documentation: `docs/data-layer.md`
   - Public binding notes: `docs/public-binding.md`
   - Form submission notes: `docs/forms.md`
+  - Admin usage: `docs/admin-usage.md`
+  - Content model summary: `docs/content-model-summary.md`
+  - Media/upload flow: `docs/media-upload-flow.md`
+  - Deployment notes: `docs/deployment-notes.md`
+  - Future extensibility: `docs/future-extensibility.md`
   

@@ -10,6 +10,8 @@ import {
   Users,
 } from "lucide-react";
 import { useAdminAuth } from "../context/AdminAuthContext";
+import { AdminStateCard } from "./AdminStateCard";
+import { canAccessAdminPath, requiredCapabilityForPath } from "../lib/permissions";
 
 interface AdminNavItem {
   label: string;
@@ -104,6 +106,16 @@ function NavSection({
 export function AdminShell() {
   const { profile, signOut } = useAdminAuth();
   const location = useLocation();
+  const role = profile?.role;
+
+  const visiblePrimaryNav = PRIMARY_NAV.filter((item) =>
+    canAccessAdminPath(role, item.path),
+  );
+  const visibleSecondaryNav = SECONDARY_NAV.filter((item) =>
+    canAccessAdminPath(role, item.path),
+  );
+  const canAccessPath = canAccessAdminPath(role, location.pathname);
+  const requiredCapability = requiredCapabilityForPath(location.pathname);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -119,8 +131,8 @@ export function AdminShell() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-            <NavSection title="Editorial" items={PRIMARY_NAV} />
-            <NavSection title="Operations" items={SECONDARY_NAV} />
+            <NavSection title="Editorial" items={visiblePrimaryNav} />
+            <NavSection title="Operations" items={visibleSecondaryNav} />
           </div>
         </aside>
 
@@ -153,7 +165,15 @@ export function AdminShell() {
           </header>
 
           <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
-            <Outlet />
+            {canAccessPath ? (
+              <Outlet />
+            ) : (
+              <AdminStateCard
+                title="Access restricted"
+                message={`Your role (${role ?? "unknown"}) does not allow this module${requiredCapability ? ` (${requiredCapability})` : ""}.`}
+                tone="error"
+              />
+            )}
           </main>
         </div>
       </div>

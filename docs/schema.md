@@ -4,6 +4,8 @@ This document describes the backend content model implemented in:
 
 - `supabase/migrations/20260323050000_anakora_content_model.sql`
 - `supabase/migrations/20260323101500_public_site_rls.sql`
+- `supabase/migrations/20260323120000_admin_cms_rls.sql`
+- `supabase/migrations/20260323133000_admin_role_storage_hardening.sql`
 - Optional seed scaffold: `supabase/seeds/20260323051000_anakora_seed_scaffold.sql`
 
 ## Design goals
@@ -110,4 +112,12 @@ This document describes the backend content model implemented in:
 ## Notes for CMS implementation
 - Status fields and structured translation tables support editorial workflows.
 - `homepage_sections.payload_json` intentionally allows controlled section-specific payloads.
+- `site_settings` now includes MVP extension columns:
+  - `social_links` (jsonb object)
+  - `notification_settings` (jsonb object)
+  - `global_seo_image_url` (text)
+  - `reservation_notification_email` (text)
+- Storage buckets used by admin media workflows:
+  - `public-assets`
+  - `admin-uploads`
 - `site_settings` is global per locale and designed for layout/header/footer configuration.

@@ -1,6 +1,6 @@
 # Admin Shell (`/admin`)
 
-This document describes the custom CMS dashboard foundation implemented for ANAKORA.
+This document describes the custom CMS dashboard shell and access model for ANAKORA.
 
 ## Scope delivered
 - Protected `/admin` route tree in the same React app.
@@ -17,7 +17,11 @@ This document describes the custom CMS dashboard foundation implemented for ANAK
   - Programs
   - Guides
   - Leads
-  - Placeholder routes for Testimonials, Journal, Homepage, Site Settings, Media
+  - Testimonials
+  - Journal
+  - Homepage
+  - Site Settings
+  - Media
 
 ## Route map
 - `/admin/login`
@@ -30,11 +34,11 @@ This document describes the custom CMS dashboard foundation implemented for ANAK
 - `/admin/guides/:guideId`
 - `/admin/leads`
 - `/admin/leads/:leadId`
-- `/admin/testimonials` (placeholder)
-- `/admin/journal` (placeholder)
-- `/admin/homepage` (placeholder)
-- `/admin/site-settings` (placeholder)
-- `/admin/media` (placeholder)
+- `/admin/testimonials`
+- `/admin/journal`
+- `/admin/homepage`
+- `/admin/site-settings`
+- `/admin/media`
 
 ## Key frontend files
 - `src/app/routes.tsx`
@@ -55,17 +59,24 @@ This document describes the custom CMS dashboard foundation implemented for ANAK
   4. role in `owner | editor | author | operations`
 - Failsafe state:
   - authenticated but no valid admin profile => blocked with explicit access message and sign-out action.
+- Role-aware module access:
+  - content modules: `owner`, `editor`, `author`
+  - leads + settings: `owner`, `editor`, `operations`
+  - media: all admin roles
 
 ## RLS support for dashboard
-Migration added:
+Migrations:
 - `supabase/migrations/20260323120000_admin_cms_rls.sql`
+- `supabase/migrations/20260323133000_admin_role_storage_hardening.sql`
 
 Includes:
 - `public.is_admin_user()` helper function (security definer).
-- Admin policies for authenticated users on CMS and leads tables.
+- `public.has_admin_role(...)` helper for role-aware policies.
+- Role-aware admin policies across CMS and lead workflows.
+- Storage bucket + RLS policy scaffolding for media uploads.
 - `admin_profiles` self-read + admin management policies.
 
 ## Notes
 - Public website routes and visuals remain isolated under existing public layout.
 - Admin shell intentionally uses practical internal-tool styling while staying clean and brand-aligned.
-- Placeholder routes are protected and production-safe entry points for next modules.
+- Shell navigation hides inaccessible modules based on role.

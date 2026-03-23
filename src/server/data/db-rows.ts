@@ -13,8 +13,14 @@ export interface SiteSettingsRow {
   contact_email: string | null;
   contact_phone: string | null;
   instagram_url: string | null;
+  default_seo_title: string | null;
+  default_seo_description: string | null;
+  global_seo_image_url: string | null;
+  reservation_notification_email: string | null;
   header_navigation: JsonValue;
   footer_legal_links: JsonValue;
+  social_links: JsonValue;
+  notification_settings: JsonValue;
   footer_newsletter_enabled: boolean;
 }
 

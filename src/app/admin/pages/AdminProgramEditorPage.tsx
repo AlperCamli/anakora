@@ -833,7 +833,7 @@ export function AdminProgramEditorPage() {
             to="/admin/media"
             className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
           >
-            Open media module placeholder
+            Open media library
           </Link>
           {!isNew && (
             <span className="text-xs text-muted-foreground">
