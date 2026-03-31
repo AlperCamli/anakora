@@ -22,7 +22,7 @@ function formatDate(value: string | null) {
   if (Number.isNaN(parsed.getTime())) {
     return value;
   }
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -82,7 +82,7 @@ function TestimonialsContent() {
         if (!mounted) {
           return;
         }
-        setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+        setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
       } finally {
         if (mounted) {
           setLoading(false);
@@ -146,7 +146,7 @@ function TestimonialsContent() {
       setSelectedId(id);
       setEditorValue(value);
     } catch (loadError) {
-      setEditorError(loadError instanceof Error ? loadError.message : "Editor failed to load.");
+      setEditorError(loadError instanceof Error ? loadError.message : "Duzenleyici yuklenemedi.");
     } finally {
       setEditorLoading(false);
     }
@@ -213,7 +213,7 @@ function TestimonialsContent() {
 
   async function persist() {
     if (!user) {
-      setSaveError("Authenticated user could not be resolved.");
+      setSaveError("Kimligi dogrulanmis kullanici bulunamadi.");
       return;
     }
 
@@ -224,13 +224,13 @@ function TestimonialsContent() {
 
     try {
       const savedId = await saveTestimonial(editorValue);
-      setSaveMessage(editorValue.id ? "Testimonial updated." : "Testimonial created.");
+      setSaveMessage(editorValue.id ? "Yorum guncellendi." : "Yorum olusturuldu.");
       await refreshListAndKeepSelection(savedId);
     } catch (persistError) {
       setSaveError(
         persistError instanceof Error
           ? persistError.message
-          : "Could not save testimonial.",
+          : "Yorum kaydedilemedi.",
       );
     } finally {
       setIsSaving(false);
@@ -240,14 +240,14 @@ function TestimonialsContent() {
   if (loading) {
     return (
       <AdminStateCard
-        title="Loading testimonials"
-        message="Preparing testimonial inventory and editor lookups..."
+        title="Yorumlar yukleniyor"
+        message="Yorum envanteri ve duzenleyici verileri hazirlaniyor..."
       />
     );
   }
 
   if (error) {
-    return <AdminStateCard title="Testimonials unavailable" message={error} tone="error" />;
+    return <AdminStateCard title="Yorumlar kullanilamiyor" message={error} tone="error" />;
   }
 
   return (
@@ -255,9 +255,9 @@ function TestimonialsContent() {
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h3 className="text-lg font-medium">Testimonials</h3>
+            <h3 className="text-lg font-medium">Yorumlar</h3>
             <p className="text-sm text-muted-foreground">
-              {filteredItems.length} results from {items.length} testimonials.
+              Toplam {items.length} yorumdan {filteredItems.length} sonuc.
             </p>
           </div>
           <button
@@ -265,7 +265,7 @@ function TestimonialsContent() {
             onClick={clearEditor}
             className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
           >
-            New testimonial
+            Yeni yorum
           </button>
         </div>
       </div>
@@ -274,7 +274,7 @@ function TestimonialsContent() {
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search slug, author, quote"
+          placeholder="Slug, yazar, alinti ara"
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
         <select
@@ -282,9 +282,9 @@ function TestimonialsContent() {
           onChange={(event) => setPublishFilter(event.target.value as PublishFilter)}
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
         >
-          <option value="all">All publish states</option>
-          <option value="published">Published only</option>
-          <option value="draft">Unpublished only</option>
+          <option value="all">Tum yayin durumlari</option>
+          <option value="published">Sadece yayindakiler</option>
+          <option value="draft">Sadece taslaklar</option>
         </select>
         <label className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm">
           <input
@@ -292,7 +292,7 @@ function TestimonialsContent() {
             checked={featuredOnly}
             onChange={(event) => setFeaturedOnly(event.target.checked)}
           />
-          Featured only
+          Sadece one cikanlar
         </label>
       </div>
 
@@ -301,11 +301,11 @@ function TestimonialsContent() {
           <table className="min-w-full divide-y divide-border text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
               <tr>
-                <th className="px-4 py-3">Author</th>
-                <th className="px-4 py-3">Locale</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Program link</th>
-                <th className="px-4 py-3">Actions</th>
+                <th className="px-4 py-3">Yazar</th>
+                <th className="px-4 py-3">Dil</th>
+                <th className="px-4 py-3">Durum</th>
+                <th className="px-4 py-3">Program bagi</th>
+                <th className="px-4 py-3">Islemler</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -317,7 +317,7 @@ function TestimonialsContent() {
                       {(item.trQuote || item.enQuote || "-").slice(0, 120)}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      /{item.slug || "no-slug"} • {formatDate(item.testimonialDate)}
+                      /{item.slug || "slug-yok"} • {formatDate(item.testimonialDate)}
                     </p>
                   </td>
                   <td className="px-4 py-3">
@@ -334,21 +334,21 @@ function TestimonialsContent() {
                           : "bg-terracotta/15 text-terracotta"
                       }`}
                     >
-                      {item.isPublished ? "published" : "unpublished"}
+                      {item.isPublished ? "yayinda" : "taslak"}
                     </span>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Rating {item.rating}/5
-                      {item.isFeatured ? " • featured" : ""}
+                      Puan {item.rating}/5
+                      {item.isFeatured ? " • one cikan" : ""}
                     </p>
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
-                    <p>{item.linkedProgramCount} linked</p>
+                    <p>{item.linkedProgramCount} bagli</p>
                     <p>
                       {item.primaryProgramId
                         ? programMap.get(item.primaryProgramId)?.title ??
                           programMap.get(item.primaryProgramId)?.slug ??
-                          "Primary set"
-                        : "No primary program"}
+                          "Ana program"
+                        : "Ana program yok"}
                     </p>
                   </td>
                   <td className="px-4 py-3 text-xs">
@@ -357,7 +357,7 @@ function TestimonialsContent() {
                       onClick={() => void openEditor(item.id)}
                       className="text-primary hover:underline"
                     >
-                      Edit
+                      Duzenle
                     </button>
                   </td>
                 </tr>
@@ -365,7 +365,7 @@ function TestimonialsContent() {
               {filteredItems.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                    No testimonial matches current filters.
+                    Secili filtrelere uygun yorum bulunamadi.
                   </td>
                 </tr>
               )}
@@ -377,10 +377,10 @@ function TestimonialsContent() {
           <div className="mb-3 flex items-center justify-between">
             <div>
               <h4 className="text-base font-medium">
-                {selectedId ? "Edit testimonial" : "Create testimonial"}
+                {selectedId ? "Yorumu duzenle" : "Yorum olustur"}
               </h4>
               <p className="text-xs text-muted-foreground">
-                TR/EN copy with optional program linking and ordering.
+                TR/EN icerik, program baglantisi ve siralama yonetimi.
               </p>
             </div>
             <button
@@ -388,12 +388,12 @@ function TestimonialsContent() {
               onClick={clearEditor}
               className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
             >
-              Reset
+              Sifirla
             </button>
           </div>
 
           {editorLoading ? (
-            <AdminStateCard title="Loading editor" message="Preparing testimonial data..." />
+            <AdminStateCard title="Duzenleyici yukleniyor" message="Yorum verileri hazirlaniyor..." />
           ) : (
             <div className="space-y-3">
               <label className="block space-y-1 text-sm">
@@ -401,14 +401,14 @@ function TestimonialsContent() {
                 <input
                   value={editorValue.slug}
                   onChange={(event) => updateField("slug", event.target.value)}
-                  placeholder="community-reflection-1"
+                  placeholder="topluluk-yorumu-1"
                   className="w-full rounded-md border border-border bg-background px-3 py-2"
                 />
               </label>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="block space-y-1 text-sm">
-                  <span>Rating (1-5)</span>
+                  <span>Puan (1-5)</span>
                   <input
                     value={editorValue.rating}
                     onChange={(event) => updateField("rating", event.target.value)}
@@ -416,7 +416,7 @@ function TestimonialsContent() {
                   />
                 </label>
                 <label className="block space-y-1 text-sm">
-                  <span>Sort order</span>
+                  <span>Sira</span>
                   <input
                     value={editorValue.sortOrder}
                     onChange={(event) => updateField("sortOrder", event.target.value)}
@@ -427,13 +427,13 @@ function TestimonialsContent() {
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="block space-y-1 text-sm">
-                  <span>Primary program link</span>
+                  <span>Ana program bagi</span>
                   <select
                     value={editorValue.primaryProgramId}
                     onChange={(event) => updateField("primaryProgramId", event.target.value)}
                     className="w-full rounded-md border border-border bg-background px-3 py-2"
                   >
-                    <option value="">None</option>
+                    <option value="">Yok</option>
                     {programs.map((program) => (
                       <option key={program.id} value={program.id}>
                         {program.title}
@@ -442,13 +442,13 @@ function TestimonialsContent() {
                   </select>
                 </label>
                 <label className="block space-y-1 text-sm">
-                  <span>Guide link (optional)</span>
+                  <span>Rehber bagi (opsiyonel)</span>
                   <select
                     value={editorValue.guideId}
                     onChange={(event) => updateField("guideId", event.target.value)}
                     className="w-full rounded-md border border-border bg-background px-3 py-2"
                   >
-                    <option value="">None</option>
+                    <option value="">Yok</option>
                     {guides.map((guide) => (
                       <option key={guide.id} value={guide.id}>
                         {guide.name}
@@ -459,7 +459,7 @@ function TestimonialsContent() {
               </div>
 
               <label className="block space-y-1 text-sm">
-                <span>Testimonial date</span>
+                <span>Yorum tarihi</span>
                 <input
                   type="date"
                   value={editorValue.testimonialDate}
@@ -469,7 +469,7 @@ function TestimonialsContent() {
               </label>
 
               <label className="block space-y-1 text-sm">
-                <span>Author image URL</span>
+                <span>Yazar gorseli URL</span>
                 <input
                   value={editorValue.authorImageUrl}
                   onChange={(event) => updateField("authorImageUrl", event.target.value)}
@@ -485,7 +485,7 @@ function TestimonialsContent() {
                     checked={editorValue.isPublished}
                     onChange={(event) => updateField("isPublished", event.target.checked)}
                   />
-                  Published
+                  Yayinda
                 </label>
                 <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2">
                   <input
@@ -493,14 +493,14 @@ function TestimonialsContent() {
                     checked={editorValue.isFeatured}
                     onChange={(event) => updateField("isFeatured", event.target.checked)}
                   />
-                  Featured
+                  One cikan
                 </label>
               </div>
 
               <div className="rounded-md border border-border p-3">
-                <p className="text-sm font-medium">Additional linked programs</p>
+                <p className="text-sm font-medium">Ek bagli programlar</p>
                 <p className="text-xs text-muted-foreground">
-                  Optional cross-linking for program detail pages.
+                  Program detay sayfalari icin opsiyonel capraz baglantilar.
                 </p>
                 <div className="mt-2 grid grid-cols-1 gap-2">
                   {programs.map((program) => (
@@ -545,20 +545,20 @@ function TestimonialsContent() {
                   <input
                     value={editorValue.en.authorName}
                     onChange={(event) => updateEnField("authorName", event.target.value)}
-                    placeholder="Author name"
+                    placeholder="Yazar adi"
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   />
                   <input
                     value={editorValue.en.authorTitle}
                     onChange={(event) => updateEnField("authorTitle", event.target.value)}
-                    placeholder="Author title"
+                    placeholder="Yazar unvani"
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   />
                   <textarea
                     value={editorValue.en.quote}
                     onChange={(event) => updateEnField("quote", event.target.value)}
                     rows={5}
-                    placeholder="EN quote"
+                    placeholder="EN yorum"
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   />
                 </div>
@@ -582,7 +582,7 @@ function TestimonialsContent() {
                 disabled={isSaving}
                 className="w-full rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70"
               >
-                {isSaving ? "Saving..." : selectedId ? "Update testimonial" : "Create testimonial"}
+                {isSaving ? "Kaydediliyor..." : selectedId ? "Yorumu guncelle" : "Yorum olustur"}
               </button>
             </div>
           )}

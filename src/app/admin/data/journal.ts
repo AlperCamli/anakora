@@ -218,7 +218,7 @@ export async function getJournalPostEditorById(postId: string): Promise<JournalP
     throw new Error(assignmentError.message);
   }
   if (!postRow) {
-    throw new Error("Journal post not found.");
+    throw new Error("Jurnal icerigi bulunamadi.");
   }
 
   const trRow = ((translationRows ?? []) as Array<Record<string, unknown>>).find(
@@ -272,18 +272,18 @@ export async function saveJournalPost(
 
   const slug = normalizeSlug(values.slug || values.tr.title || values.en.title);
   if (!slug) {
-    throw new Error("Slug is required.");
+    throw new Error("Slug alani zorunludur.");
   }
   if (!values.tr.title.trim() || !values.en.title.trim()) {
-    throw new Error("Both TR and EN titles are required.");
+    throw new Error("TR ve EN baslik alanlari zorunludur.");
   }
   if (!values.tr.contentMarkdown.trim() || !values.en.contentMarkdown.trim()) {
-    throw new Error("Both TR and EN markdown content fields are required.");
+    throw new Error("TR ve EN markdown icerik alanlari zorunludur.");
   }
 
-  const readingTimeMinutes = parseInteger(values.readingTimeMinutes, "Reading time");
+  const readingTimeMinutes = parseInteger(values.readingTimeMinutes, "Okuma suresi");
   if (readingTimeMinutes !== null && readingTimeMinutes <= 0) {
-    throw new Error("Reading time must be greater than zero.");
+    throw new Error("Okuma suresi sifirdan buyuk olmalidir.");
   }
 
   const explicitPublishedAt = toIsoFromDateTimeLocal(values.publishedAt, "Published at");
@@ -470,7 +470,7 @@ export async function getJournalCategoryEditorById(
     throw new Error(translationError.message);
   }
   if (!categoryRow) {
-    throw new Error("Journal category not found.");
+    throw new Error("Jurnal kategorisi bulunamadi.");
   }
 
   const tr = ((translationRows ?? []) as Array<Record<string, unknown>>).find(
@@ -499,13 +499,13 @@ export async function saveJournalCategory(
   const supabase = getSupabaseBrowserClient();
   const slug = normalizeSlug(values.slug || values.trName || values.enName);
   if (!slug) {
-    throw new Error("Category slug is required.");
+    throw new Error("Kategori slug alani zorunludur.");
   }
   if (!values.trName.trim() || !values.enName.trim()) {
-    throw new Error("Both TR and EN category names are required.");
+    throw new Error("TR ve EN kategori adlari zorunludur.");
   }
 
-  const sortOrder = parseInteger(values.sortOrder, "Category sort order") ?? 0;
+  const sortOrder = parseInteger(values.sortOrder, "Kategori sirasi") ?? 0;
 
   const payload = {
     slug,

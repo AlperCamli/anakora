@@ -14,8 +14,20 @@ function hasText(value: string) {
   return value.trim().length > 0;
 }
 
+const SECTION_LABELS: Record<HomepageSectionKey, string> = {
+  hero: "Hero",
+  brand_manifesto: "Marka Manifestosu",
+  experience_categories: "Deneyim Kategorileri",
+  upcoming_programs: "Yaklasan Programlar",
+  why_anakora: "Neden Anakora",
+  archive_preview: "Arsiv Onizleme",
+  testimonials: "Yorumlar",
+  journal_preview: "Jurnal Onizleme",
+  final_cta: "Final CTA",
+};
+
 function sectionLabel(sectionKey: HomepageSectionKey) {
-  return sectionKey.replaceAll("_", " ");
+  return SECTION_LABELS[sectionKey];
 }
 
 export function AdminHomepagePage() {
@@ -50,7 +62,7 @@ function HomepageContent() {
         setSelectedKey(rows[0]?.key ?? null);
       } catch (fetchError) {
         if (mounted) {
-          setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+          setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
         }
       } finally {
         if (mounted) {
@@ -77,7 +89,7 @@ function HomepageContent() {
 
   async function persist() {
     if (!user) {
-      setSaveError("Authenticated user could not be resolved.");
+      setSaveError("Kimligi dogrulanmis kullanici bulunamadi.");
       return;
     }
 
@@ -88,10 +100,10 @@ function HomepageContent() {
       await saveHomepageSections(sections, user.id);
       const refreshed = await listHomepageSections();
       setSections(refreshed);
-      setSaveMessage("Homepage sections saved.");
+      setSaveMessage("Anasayfa bolumleri kaydedildi.");
     } catch (persistError) {
       setSaveError(
-        persistError instanceof Error ? persistError.message : "Could not save homepage sections.",
+        persistError instanceof Error ? persistError.message : "Anasayfa bolumleri kaydedilemedi.",
       );
     } finally {
       setSaving(false);
@@ -101,14 +113,14 @@ function HomepageContent() {
   if (loading) {
     return (
       <AdminStateCard
-        title="Loading homepage sections"
-        message="Preparing structured section configuration..."
+        title="Anasayfa bolumleri yukleniyor"
+        message="Yapilandirilmis bolum ayarlari hazirlaniyor..."
       />
     );
   }
 
   if (error) {
-    return <AdminStateCard title="Homepage module unavailable" message={error} tone="error" />;
+    return <AdminStateCard title="Anasayfa modulu kullanilamiyor" message={error} tone="error" />;
   }
 
   return (
@@ -116,9 +128,9 @@ function HomepageContent() {
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-medium">Homepage sections</h3>
+            <h3 className="text-lg font-medium">Anasayfa bolumleri</h3>
             <p className="text-sm text-muted-foreground">
-              Manage activation, ordering, localized copy, media, and controlled payload JSON.
+              Aktiflik, sira, lokalize metinler, medya ve kontrollu payload JSON yonetimi.
             </p>
           </div>
           <button
@@ -127,7 +139,7 @@ function HomepageContent() {
             disabled={saving}
             className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70"
           >
-            {saving ? "Saving..." : "Save sections"}
+            {saving ? "Kaydediliyor..." : "Bolumleri kaydet"}
           </button>
         </div>
         {(saveMessage || saveError) && (
@@ -149,8 +161,8 @@ function HomepageContent() {
             <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Section</th>
-                <th className="px-4 py-3">Locale</th>
-                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Dil</th>
+                <th className="px-4 py-3">Durum</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -162,7 +174,7 @@ function HomepageContent() {
                 >
                   <td className="px-4 py-3">
                     <p className="font-medium capitalize">{sectionLabel(section.key)}</p>
-                    <p className="text-xs text-muted-foreground">order {section.tr.sortOrder}</p>
+                    <p className="text-xs text-muted-foreground">sira {section.tr.sortOrder}</p>
                   </td>
                   <td className="px-4 py-3">
                     <AdminLocaleCompleteness
@@ -178,7 +190,7 @@ function HomepageContent() {
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {section.tr.isActive ? "enabled" : "disabled"}
+                      {section.tr.isActive ? "aktif" : "pasif"}
                     </span>
                   </td>
                 </tr>
@@ -196,7 +208,7 @@ function HomepageContent() {
             <div className="mt-3 space-y-3">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="block space-y-1 text-sm">
-                  <span>Section order</span>
+                  <span>Bolum sirasi</span>
                   <input
                     value={selectedSection.tr.sortOrder}
                     onChange={(event) =>
@@ -221,7 +233,7 @@ function HomepageContent() {
                       }))
                     }
                   />
-                  Enabled section
+                  Bolum aktif
                 </label>
               </div>
 
@@ -249,7 +261,7 @@ function HomepageContent() {
             </div>
           </div>
         ) : (
-          <AdminStateCard title="No section selected" message="Select a section from the list." />
+          <AdminStateCard title="Bolum secilmedi" message="Listeden bir bolum secin." />
         )}
       </section>
     </div>
@@ -275,26 +287,26 @@ function SectionLocaleEditor({
         <input
           value={value.title}
           onChange={(event) => onChange("title", event.target.value)}
-          placeholder={`${label} title`}
+          placeholder={`${label} baslik`}
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
         <textarea
           value={value.subtitle}
           onChange={(event) => onChange("subtitle", event.target.value)}
           rows={2}
-          placeholder={`${label} subtitle`}
+          placeholder={`${label} alt baslik`}
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
         <input
           value={value.mediaUrl}
           onChange={(event) => onChange("mediaUrl", event.target.value)}
-          placeholder="Media URL"
+          placeholder="Medya URL"
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
         <input
           value={value.mediaAlt}
           onChange={(event) => onChange("mediaAlt", event.target.value)}
-          placeholder="Media alt text"
+          placeholder="Medya alt metin"
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
         <textarea

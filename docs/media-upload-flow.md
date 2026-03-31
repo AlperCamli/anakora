@@ -9,18 +9,32 @@
 
 ## Upload Path Convention
 - Generated path format:
-  - `images/<module>/<year>/<month>/[locale]/[entity]/<unique>.<ext>`
+  - `images/<module>/<unique>.<ext>`
 - Examples:
-  - `images/journal/2026/03/en/post-abc/1711150000-a1b2c3.jpg`
-  - `images/homepage/2026/03/1711151000-d4e5f6.webp`
+  - `images/journal/1711150000-a1b2c3.jpg`
+  - `images/homepage/1711151000-d4e5f6.webp`
+- Supported modules:
+  - `journal`
+  - `program`
+  - `guide`
+  - `testimonials`
+  - `homepage`
 
 ## Admin Media Module
 - Route: `/admin/media`
 - Features:
-  - upload with visibility + module + optional locale/entity context
-  - browse by prefix
+  - upload with visibility + fixed module selection list
+  - browse by module
+  - recursive listing for backward compatibility with older deep paths
   - select asset and read reference outputs
   - delete asset
+
+## Program/Journal Editor Image Flow
+- Program and Journal admin editors now support:
+  - upload from device
+  - pick existing image from module media list
+  - inline image preview
+- Stored field remains URL (`cover_image_url`) for compatibility with existing schema/data layer.
 
 ## Reference Patterns
 - Public URL (for direct image fields):

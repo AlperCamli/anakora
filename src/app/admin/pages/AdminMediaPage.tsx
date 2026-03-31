@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { AdminRoleGate } from "../components/AdminRoleGate";
 import { AdminStateCard } from "../components/AdminStateCard";
 import {
+  MEDIA_MODULE_LABELS,
+  MEDIA_MODULES,
   getBucketForVisibility,
   listMediaObjects,
   removeMediaObject,
   uploadMediaObject,
 } from "../data/media";
-import type { AppLocale, MediaLibraryItem, MediaVisibility } from "../types";
+import type { MediaLibraryItem, MediaModule, MediaVisibility } from "../types";
 
 function formatSize(size: number | null) {
   if (!size || size <= 0) {
@@ -32,10 +34,7 @@ export function AdminMediaPage() {
 
 function MediaContent() {
   const [visibility, setVisibility] = useState<MediaVisibility>("public");
-  const [prefix, setPrefix] = useState("images");
-  const [locale, setLocale] = useState<AppLocale | "">("");
-  const [moduleName, setModuleName] = useState("journal");
-  const [entityId, setEntityId] = useState("");
+  const [moduleName, setModuleName] = useState<MediaModule>("journal");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [items, setItems] = useState<MediaLibraryItem[]>([]);
@@ -52,7 +51,7 @@ function MediaContent() {
     try {
       const rows = await listMediaObjects({
         visibility,
-        prefix,
+        module: moduleName,
         limit: 200,
       });
       setItems(rows);
@@ -62,7 +61,7 @@ function MediaContent() {
         setSelectedItem(rows[0]);
       }
     } catch (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+      setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
     } finally {
       setLoading(false);
     }
@@ -71,11 +70,11 @@ function MediaContent() {
   useEffect(() => {
     void loadLibrary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
+  }, [visibility, moduleName]);
 
   async function handleUpload() {
     if (!selectedFile) {
-      setActionError("Please select a file first.");
+      setActionError("Lutfen once dosya secin.");
       return;
     }
 
@@ -87,15 +86,13 @@ function MediaContent() {
         visibility,
         file: selectedFile,
         module: moduleName,
-        locale,
-        entityId: entityId || undefined,
       });
-      setActionMessage("File uploaded successfully.");
+      setActionMessage("Dosya basariyla yuklendi.");
       setSelectedFile(null);
       await loadLibrary();
       setSelectedItem(uploaded);
     } catch (uploadError) {
-      setActionError(uploadError instanceof Error ? uploadError.message : "Upload failed.");
+      setActionError(uploadError instanceof Error ? uploadError.message : "Yukleme basarisiz.");
     } finally {
       setUploading(false);
     }
@@ -106,82 +103,69 @@ function MediaContent() {
     setActionMessage(null);
     try {
       await removeMediaObject(item.reference);
-      setActionMessage("Asset deleted.");
+      setActionMessage("Varlik silindi.");
       await loadLibrary();
     } catch (deleteError) {
-      setActionError(deleteError instanceof Error ? deleteError.message : "Delete failed.");
+      setActionError(deleteError instanceof Error ? deleteError.message : "Silme islemi basarisiz.");
     }
   }
 
   if (loading) {
-    return <AdminStateCard title="Loading media library" message="Reading storage objects..." />;
+    return <AdminStateCard title="Medya kutuphanesi yukleniyor" message="Depolama dosyalari okunuyor..." />;
   }
 
   if (error) {
-    return <AdminStateCard title="Media unavailable" message={error} tone="error" />;
+    return <AdminStateCard title="Medya modulu kullanilamiyor" message={error} tone="error" />;
   }
 
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <h3 className="text-lg font-medium">Media library</h3>
+        <h3 className="text-lg font-medium">Medya kutuphanesi</h3>
         <p className="text-sm text-muted-foreground">
-          Upload flow uses Supabase Storage. Path convention:
+          Yeni yukleme yolu:
           <code className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs">
-            images/&lt;module&gt;/&lt;year&gt;/&lt;month&gt;/[locale]/[entity]/&lt;unique&gt;.&lt;ext&gt;
+            images/&lt;module&gt;/&lt;unique&gt;.&lt;ext&gt;
           </code>
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Not: Eski derin klasor yapisindaki dosyalar da module gore listelenmeye devam eder.
         </p>
       </div>
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="text-base font-medium">Upload</h4>
+          <h4 className="text-base font-medium">Yukle</h4>
           <div className="mt-3 space-y-2">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <label className="block space-y-1 text-sm">
-                <span>Visibility</span>
+                <span>Gorunurluk</span>
                 <select
                   value={visibility}
                   onChange={(event) => setVisibility(event.target.value as MediaVisibility)}
                   className="w-full rounded-md border border-border bg-background px-3 py-2"
                 >
-                  <option value="public">public ({getBucketForVisibility("public")})</option>
-                  <option value="private">private ({getBucketForVisibility("private")})</option>
+                  <option value="public">Herkese acik ({getBucketForVisibility("public")})</option>
+                  <option value="private">Sadece admin ({getBucketForVisibility("private")})</option>
                 </select>
               </label>
               <label className="block space-y-1 text-sm">
-                <span>Module</span>
-                <input
-                  value={moduleName}
-                  onChange={(event) => setModuleName(event.target.value)}
-                  className="w-full rounded-md border border-border bg-background px-3 py-2"
-                />
-              </label>
-            </div>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <label className="block space-y-1 text-sm">
-                <span>Locale (optional)</span>
+                <span>Modul</span>
                 <select
-                  value={locale}
-                  onChange={(event) => setLocale(event.target.value as AppLocale | "")}
+                  value={moduleName}
+                  onChange={(event) => setModuleName(event.target.value as MediaModule)}
                   className="w-full rounded-md border border-border bg-background px-3 py-2"
                 >
-                  <option value="">none</option>
-                  <option value="tr">tr</option>
-                  <option value="en">en</option>
+                  {MEDIA_MODULES.map((module) => (
+                    <option key={module} value={module}>
+                      {MEDIA_MODULE_LABELS[module]}
+                    </option>
+                  ))}
                 </select>
-              </label>
-              <label className="block space-y-1 text-sm">
-                <span>Entity ID (optional)</span>
-                <input
-                  value={entityId}
-                  onChange={(event) => setEntityId(event.target.value)}
-                  className="w-full rounded-md border border-border bg-background px-3 py-2"
-                />
               </label>
             </div>
             <label className="block space-y-1 text-sm">
-              <span>File</span>
+              <span>Dosya</span>
               <input
                 type="file"
                 onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
@@ -194,24 +178,18 @@ function MediaContent() {
               disabled={uploading}
               className="w-full rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70"
             >
-              {uploading ? "Uploading..." : "Upload to storage"}
+              {uploading ? "Yukleniyor..." : "Kutuphaneye yukle"}
             </button>
           </div>
 
-          <h4 className="mt-6 text-base font-medium">Browse</h4>
+          <h4 className="mt-6 text-base font-medium">Listele</h4>
           <div className="mt-2 flex gap-2">
-            <input
-              value={prefix}
-              onChange={(event) => setPrefix(event.target.value)}
-              placeholder="prefix (example: images)"
-              className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
-            />
             <button
               type="button"
               onClick={() => void loadLibrary()}
               className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted"
             >
-              Refresh
+              Yenile
             </button>
           </div>
 
@@ -229,7 +207,9 @@ function MediaContent() {
         </div>
 
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="text-base font-medium">Assets ({items.length})</h4>
+          <h4 className="text-base font-medium">
+            Varliklar ({MEDIA_MODULE_LABELS[moduleName]}) • {items.length}
+          </h4>
           <div className="mt-3 max-h-[520px] space-y-2 overflow-auto pr-1">
             {items.map((item) => (
               <button
@@ -250,7 +230,7 @@ function MediaContent() {
             ))}
             {items.length === 0 && (
               <p className="rounded-md border border-dashed border-border px-3 py-8 text-center text-sm text-muted-foreground">
-                No assets found for this prefix/bucket.
+                {MEDIA_MODULE_LABELS[moduleName]} modulunde varlik bulunamadi.
               </p>
             )}
           </div>
@@ -258,16 +238,16 @@ function MediaContent() {
           {selectedItem && (
             <div className="mt-4 space-y-2 rounded-md border border-border bg-background p-3">
               <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
-                Reference patterns
+                Referans bicimleri
               </p>
-              <p className="text-xs text-muted-foreground">Public URL</p>
+              <p className="text-xs text-muted-foreground">Herkese acik URL</p>
               <textarea
                 readOnly
-                value={selectedItem.publicUrl ?? "(private object - no public URL)"}
+                value={selectedItem.publicUrl ?? "(Sadece admin nesnesi - herkese acik URL yok)"}
                 rows={2}
                 className="w-full rounded-md border border-border bg-card px-2 py-1 text-xs"
               />
-              <p className="text-xs text-muted-foreground">Storage reference</p>
+              <p className="text-xs text-muted-foreground">Depolama referansi</p>
               <textarea
                 readOnly
                 value={selectedItem.reference}
@@ -279,7 +259,7 @@ function MediaContent() {
                 onClick={() => void handleDelete(selectedItem)}
                 className="rounded-md border border-destructive/40 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/5"
               >
-                Delete selected asset
+                Secili varligi sil
               </button>
             </div>
           )}

@@ -41,7 +41,7 @@ function SiteSettingsContent() {
         setValue(settings);
       } catch (fetchError) {
         if (mounted) {
-          setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+          setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
         }
       } finally {
         if (mounted) {
@@ -71,7 +71,7 @@ function SiteSettingsContent() {
 
   async function persist() {
     if (!user) {
-      setSaveError("Authenticated user could not be resolved.");
+      setSaveError("Kimligi dogrulanmis kullanici bulunamadi.");
       return;
     }
 
@@ -80,10 +80,10 @@ function SiteSettingsContent() {
     setSaveMessage(null);
     try {
       await saveSiteSettings(value, user.id);
-      setSaveMessage("Site settings saved.");
+      setSaveMessage("Site ayarlari kaydedildi.");
     } catch (persistError) {
       setSaveError(
-        persistError instanceof Error ? persistError.message : "Could not save site settings.",
+        persistError instanceof Error ? persistError.message : "Site ayarlari kaydedilemedi.",
       );
     } finally {
       setSaving(false);
@@ -91,10 +91,10 @@ function SiteSettingsContent() {
   }
 
   if (loading) {
-    return <AdminStateCard title="Loading site settings" message="Preparing locale settings..." />;
+    return <AdminStateCard title="Site ayarlari yukleniyor" message="Dil bazli ayarlar hazirlaniyor..." />;
   }
   if (error) {
-    return <AdminStateCard title="Site settings unavailable" message={error} tone="error" />;
+    return <AdminStateCard title="Site ayarlari kullanilamiyor" message={error} tone="error" />;
   }
 
   return (
@@ -102,9 +102,9 @@ function SiteSettingsContent() {
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-medium">Site settings</h3>
+            <h3 className="text-lg font-medium">Site ayarlari</h3>
             <p className="text-sm text-muted-foreground">
-              Contact info, social links, global SEO defaults, and notification placeholders.
+              Iletisim, sosyal linkler, global SEO varsayilanlari ve bildirim ayarlari.
             </p>
           </div>
           <button
@@ -113,7 +113,7 @@ function SiteSettingsContent() {
             disabled={saving}
             className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70"
           >
-            {saving ? "Saving..." : "Save settings"}
+            {saving ? "Kaydediliyor..." : "Ayarlari kaydet"}
           </button>
         </div>
         {(saveMessage || saveError) && (
@@ -159,26 +159,26 @@ function SiteSettingsLocaleCard({
 }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <h4 className="text-base font-medium">{label} locale</h4>
+      <h4 className="text-base font-medium">{label} dili</h4>
       <div className="mt-3 space-y-2">
-        <input value={value.siteName} onChange={(event) => onChange("siteName", event.target.value)} placeholder="Site name" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.logoText} onChange={(event) => onChange("logoText", event.target.value)} placeholder="Logo text" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <textarea value={value.tagline} onChange={(event) => onChange("tagline", event.target.value)} rows={2} placeholder="Tagline" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.contactEmail} onChange={(event) => onChange("contactEmail", event.target.value)} placeholder="Contact email" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.contactPhone} onChange={(event) => onChange("contactPhone", event.target.value)} placeholder="Contact phone" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.siteName} onChange={(event) => onChange("siteName", event.target.value)} placeholder="Site adi" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.logoText} onChange={(event) => onChange("logoText", event.target.value)} placeholder="Logo metni" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <textarea value={value.tagline} onChange={(event) => onChange("tagline", event.target.value)} rows={2} placeholder="Slogan" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.contactEmail} onChange={(event) => onChange("contactEmail", event.target.value)} placeholder="Iletisim e-postasi" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.contactPhone} onChange={(event) => onChange("contactPhone", event.target.value)} placeholder="Iletisim telefonu" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
         <input value={value.instagramUrl} onChange={(event) => onChange("instagramUrl", event.target.value)} placeholder="Instagram URL" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.defaultSeoTitle} onChange={(event) => onChange("defaultSeoTitle", event.target.value)} placeholder="Default SEO title" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <textarea value={value.defaultSeoDescription} onChange={(event) => onChange("defaultSeoDescription", event.target.value)} rows={2} placeholder="Default SEO description" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.globalSeoImageUrl} onChange={(event) => onChange("globalSeoImageUrl", event.target.value)} placeholder="Global SEO image URL" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.reservationNotificationEmail} onChange={(event) => onChange("reservationNotificationEmail", event.target.value)} placeholder="Reservation notification email" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.defaultSeoTitle} onChange={(event) => onChange("defaultSeoTitle", event.target.value)} placeholder="Varsayilan SEO baslik" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <textarea value={value.defaultSeoDescription} onChange={(event) => onChange("defaultSeoDescription", event.target.value)} rows={2} placeholder="Varsayilan SEO aciklama" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.globalSeoImageUrl} onChange={(event) => onChange("globalSeoImageUrl", event.target.value)} placeholder="Global SEO gorsel URL" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.reservationNotificationEmail} onChange={(event) => onChange("reservationNotificationEmail", event.target.value)} placeholder="Rezervasyon bildirim e-postasi" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
           <input type="checkbox" checked={value.footerNewsletterEnabled} onChange={(event) => onChange("footerNewsletterEnabled", event.target.checked)} />
-          Footer newsletter enabled
+          Footer newsletter aktif
         </label>
-        <textarea value={value.headerNavigationJson} onChange={(event) => onChange("headerNavigationJson", event.target.value)} rows={4} placeholder='Header navigation JSON (array): [{\"label\":\"...\",\"href\":\"...\"}]' className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs" />
-        <textarea value={value.footerLegalLinksJson} onChange={(event) => onChange("footerLegalLinksJson", event.target.value)} rows={4} placeholder='Footer legal links JSON (array): [{\"label\":\"...\",\"href\":\"...\"}]' className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs" />
-        <textarea value={value.socialLinksJson} onChange={(event) => onChange("socialLinksJson", event.target.value)} rows={4} placeholder='Social links JSON (object): {\"instagram\":\"https://...\"}' className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs" />
-        <textarea value={value.notificationSettingsJson} onChange={(event) => onChange("notificationSettingsJson", event.target.value)} rows={4} placeholder='Notification settings JSON (object): {\"sendBookingEmail\":true}' className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs" />
+        <textarea value={value.headerNavigationJson} onChange={(event) => onChange("headerNavigationJson", event.target.value)} rows={4} placeholder='Header navigasyon JSON (dizi): [{\"label\":\"...\",\"href\":\"...\"}]' className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs" />
+        <textarea value={value.footerLegalLinksJson} onChange={(event) => onChange("footerLegalLinksJson", event.target.value)} rows={4} placeholder='Footer yasal link JSON (dizi): [{\"label\":\"...\",\"href\":\"...\"}]' className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs" />
+        <textarea value={value.socialLinksJson} onChange={(event) => onChange("socialLinksJson", event.target.value)} rows={4} placeholder='Sosyal link JSON (nesne): {\"instagram\":\"https://...\"}' className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs" />
+        <textarea value={value.notificationSettingsJson} onChange={(event) => onChange("notificationSettingsJson", event.target.value)} rows={4} placeholder='Bildirim ayarlari JSON (nesne): {\"sendBookingEmail\":true}' className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs" />
       </div>
     </div>
   );

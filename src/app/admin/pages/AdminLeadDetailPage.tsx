@@ -14,12 +14,30 @@ const STATUS_OPTIONS: LeadStatus[] = [
   "spam",
 ];
 
+const STATUS_LABELS: Record<LeadStatus, string> = {
+  new: "Yeni",
+  reviewed: "Incelendi",
+  contacted: "Iletisime gecildi",
+  qualified: "Nitelikli",
+  converted: "Donustu",
+  archived: "Arsiv",
+  spam: "Spam",
+};
+
+const SOURCE_LABELS: Record<LeadDetail["source"], string> = {
+  newsletter: "E-bulten",
+  program_booking: "Program basvurusu",
+  journal_newsletter: "Jurnal e-bulten",
+  general_contact: "Genel iletisim",
+  waitlist: "Bekleme listesi",
+};
+
 function formatDate(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return "-";
   }
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -59,7 +77,7 @@ export function AdminLeadDetailPage() {
         if (!mounted) {
           return;
         }
-        setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+        setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
       } finally {
         if (mounted) {
           setLoading(false);
@@ -102,10 +120,10 @@ export function AdminLeadDetailPage() {
             }
           : prev,
       );
-      setSaveMessage("Lead status and note updated.");
+      setSaveMessage("Lead durumu ve ic not guncellendi.");
     } catch (persistError) {
       setSaveError(
-        persistError instanceof Error ? persistError.message : "Could not save lead update.",
+        persistError instanceof Error ? persistError.message : "Lead guncellemesi kaydedilemedi.",
       );
     } finally {
       setSaving(false);
@@ -115,8 +133,8 @@ export function AdminLeadDetailPage() {
   if (loading) {
     return (
       <AdminStateCard
-        title="Loading lead"
-        message="Retrieving submission detail and current status..."
+        title="Lead yukleniyor"
+        message="Basvuru detayi ve mevcut durum getiriliyor..."
       />
     );
   }
@@ -124,8 +142,8 @@ export function AdminLeadDetailPage() {
   if (error || !detail) {
     return (
       <AdminStateCard
-        title="Lead unavailable"
-        message={error ?? "Lead could not be found."}
+        title="Lead bulunamadi"
+        message={error ?? "Lead kaydi bulunamadi."}
         tone="error"
       />
     );
@@ -137,65 +155,73 @@ export function AdminLeadDetailPage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-              Lead detail
+              Lead detayi
             </p>
-            <h3 className="text-lg font-medium">{detail.fullName || detail.email}</h3>
-            <p className="text-sm text-muted-foreground">{detail.email}</p>
+            <h3 className="text-lg font-medium">
+              {detail.fullName || detail.email || detail.phone || "Isimsiz lead"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {detail.email || detail.phone || "Iletisim bilgisi yok"}
+            </p>
           </div>
           <Link
             to="/admin/leads"
             className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
           >
-            Back to inbox
+            Listeye don
           </Link>
         </div>
       </div>
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">Submission</h4>
+          <h4 className="mb-3 text-base font-medium">Basvuru</h4>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">Source</dt>
-              <dd className="font-medium uppercase tracking-wide">{detail.source}</dd>
+              <dt className="text-muted-foreground">Kaynak</dt>
+              <dd className="font-medium uppercase tracking-wide">{SOURCE_LABELS[detail.source]}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">Locale</dt>
+              <dt className="text-muted-foreground">Dil</dt>
               <dd className="font-medium uppercase tracking-wide">{detail.locale}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">E-posta</dt>
+              <dd className="font-medium">{detail.email || "-"}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Program</dt>
               <dd className="font-medium">{detail.programSlug || "-"}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">Phone</dt>
+              <dt className="text-muted-foreground">Telefon</dt>
               <dd className="font-medium">{detail.phone || "-"}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">Submitted</dt>
+              <dt className="text-muted-foreground">Gonderim</dt>
               <dd className="font-medium">{formatDate(detail.submittedAt)}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">Marketing consent</dt>
-              <dd className="font-medium">{detail.consentMarketing ? "yes" : "no"}</dd>
+              <dt className="text-muted-foreground">Pazarlama izni</dt>
+              <dd className="font-medium">{detail.consentMarketing ? "evet" : "hayir"}</dd>
             </div>
           </dl>
 
           <div className="mt-4 rounded-md border border-border bg-background p-3">
             <p className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
-              Message
+              Mesaj
             </p>
             <p className="whitespace-pre-wrap text-sm text-foreground/90">
-              {detail.message || "No message provided."}
+              {detail.message || "Mesaj girilmedi."}
             </p>
           </div>
         </div>
 
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">Ops actions</h4>
+          <h4 className="mb-3 text-base font-medium">Operasyon islemleri</h4>
           <div className="space-y-3">
             <label className="block space-y-1 text-sm">
-              <span>Status</span>
+              <span>Durum</span>
               <select
                 value={status}
                 onChange={(event) => setStatus(event.target.value as LeadStatus)}
@@ -203,19 +229,19 @@ export function AdminLeadDetailPage() {
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option} value={option}>
-                    {option}
+                    {STATUS_LABELS[option]}
                   </option>
                 ))}
               </select>
             </label>
 
             <label className="block space-y-1 text-sm">
-              <span>Internal note</span>
+              <span>Ic not</span>
               <textarea
                 value={internalNote}
                 onChange={(event) => setInternalNote(event.target.value)}
                 rows={8}
-                placeholder="Add qualification notes, follow-up outcomes, or operational context."
+                placeholder="Niteliklendirme notu, takip sonucu veya operasyonel baglam ekleyin."
                 className="w-full rounded-md border border-border bg-background px-3 py-2"
               />
             </label>
@@ -226,7 +252,7 @@ export function AdminLeadDetailPage() {
               disabled={saving}
               className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70"
             >
-              {saving ? "Saving..." : "Update lead"}
+              {saving ? "Kaydediliyor..." : "Lead'i guncelle"}
             </button>
 
             {(saveMessage || saveError) && (
@@ -245,7 +271,7 @@ export function AdminLeadDetailPage() {
       </section>
 
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <h4 className="mb-2 text-base font-medium">Metadata snapshot</h4>
+        <h4 className="mb-2 text-base font-medium">Metadata gorunumu</h4>
         <pre className="overflow-auto rounded-md bg-background p-3 text-xs text-muted-foreground">
           {JSON.stringify(detail.metadata, null, 2)}
         </pre>

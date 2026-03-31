@@ -72,6 +72,8 @@ This document describes the backend content model implemented in:
   - arrays for `who_is_it_for`, itinerary/included/excluded lists.
   - objects for homepage payload and gallery translation JSON.
   - arrays for navigations/legal links in `site_settings`.
+- Lead contact integrity:
+  - at least one of `email` or `phone` must be present in `lead_submissions`.
 
 ## Featured content support
 - `is_featured` on:

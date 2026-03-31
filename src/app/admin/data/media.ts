@@ -1,8 +1,25 @@
 import { getSupabaseBrowserClient } from "../../../lib/supabase/browser-client";
-import type { AppLocale, MediaLibraryItem, MediaVisibility } from "../types";
+import type { MediaLibraryItem, MediaModule, MediaVisibility } from "../types";
 
 const DEFAULT_PUBLIC_BUCKET = "public-assets";
 const DEFAULT_PRIVATE_BUCKET = "admin-uploads";
+const DEFAULT_LIST_PAGE_SIZE = 100;
+
+export const MEDIA_MODULES: MediaModule[] = [
+  "journal",
+  "program",
+  "guide",
+  "testimonials",
+  "homepage",
+];
+
+export const MEDIA_MODULE_LABELS: Record<MediaModule, string> = {
+  journal: "Jurnal",
+  program: "Program",
+  guide: "Rehber",
+  testimonials: "Yorumlar",
+  homepage: "Anasayfa",
+};
 
 function readBucketName(visibility: MediaVisibility) {
   if (visibility === "public") {
@@ -43,31 +60,13 @@ function resolveExtension(fileName: string) {
 }
 
 function buildMediaPath(input: {
-  module: string;
+  module: MediaModule;
   originalFileName: string;
-  locale?: AppLocale | "";
-  entityId?: string;
 }) {
-  const now = new Date();
-  const year = String(now.getUTCFullYear());
-  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
-  const moduleSegment = sanitizeSegment(input.module) || "misc";
-  const localeSegment =
-    input.locale === "tr" || input.locale === "en" ? input.locale : "";
-  const entitySegment = sanitizeSegment(input.entityId ?? "");
+  const moduleSegment = sanitizeSegment(input.module) || "journal";
   const extension = resolveExtension(input.originalFileName);
   const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
-  const parts = ["images", moduleSegment, year, month];
-  if (localeSegment) {
-    parts.push(localeSegment);
-  }
-  if (entitySegment) {
-    parts.push(entitySegment);
-  }
-  parts.push(`${uniqueId}.${extension}`);
-
-  return parts.join("/");
+  return ["images", moduleSegment, `${uniqueId}.${extension}`].join("/");
 }
 
 export function toMediaReference(bucket: string, path: string) {
@@ -98,62 +97,107 @@ export function getBucketForVisibility(visibility: MediaVisibility) {
   return readBucketName(visibility);
 }
 
+function toTrimmedPath(value?: string) {
+  return (value ?? "").trim().replace(/^\/+|\/+$/g, "");
+}
+
+async function listRecursiveFiles(options: {
+  bucket: string;
+  rootPrefix: string;
+  limit: number;
+}) {
+  const supabase = getSupabaseBrowserClient();
+  const queue: string[] = [options.rootPrefix];
+  const files: Array<{ path: string; row: Record<string, unknown> }> = [];
+
+  while (queue.length > 0 && files.length < options.limit) {
+    const currentPrefix = queue.shift() ?? "";
+    const { data, error } = await supabase.storage
+      .from(options.bucket)
+      .list(currentPrefix, {
+        limit: DEFAULT_LIST_PAGE_SIZE,
+        offset: 0,
+        sortBy: { column: "created_at", order: "desc" },
+      });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    for (const row of (data ?? []) as Array<Record<string, unknown>>) {
+      const name = String(row.name ?? "").trim();
+      if (!name) {
+        continue;
+      }
+      const path = currentPrefix ? `${currentPrefix}/${name}` : name;
+
+      if (row.id === null) {
+        queue.push(path);
+        continue;
+      }
+
+      files.push({ path, row });
+      if (files.length >= options.limit) {
+        break;
+      }
+    }
+  }
+
+  return files;
+}
+
 export async function listMediaObjects(options: {
   visibility: MediaVisibility;
+  module?: MediaModule;
   prefix?: string;
   limit?: number;
 }): Promise<MediaLibraryItem[]> {
-  const supabase = getSupabaseBrowserClient();
   const bucket = readBucketName(options.visibility);
-  const normalizedPrefix = (options.prefix ?? "").replace(/^\/+|\/+$/g, "");
+  const supabase = getSupabaseBrowserClient();
+  const requestedPrefix = options.module
+    ? `images/${options.module}`
+    : toTrimmedPath(options.prefix ?? "images");
+  const rows = await listRecursiveFiles({
+    bucket,
+    rootPrefix: requestedPrefix,
+    limit: options.limit ?? 200,
+  });
 
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .list(normalizedPrefix, {
-      limit: options.limit ?? 200,
-      offset: 0,
-      sortBy: { column: "created_at", order: "desc" },
-    });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const rows = (data ?? []).filter((item) => item.id !== null);
-  return rows.map((item) => {
-    const path = normalizedPrefix ? `${normalizedPrefix}/${item.name}` : item.name;
+  return rows
+    .map(({ path, row }) => {
     const publicUrl =
       options.visibility === "public"
         ? supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl
         : null;
-    const metadata = (item.metadata ?? {}) as Record<string, unknown>;
+    const metadata = (row.metadata ?? {}) as Record<string, unknown>;
     return {
       bucket,
       path,
-      name: item.name,
+      name: String(row.name),
       size: typeof metadata.size === "number" ? metadata.size : null,
-      createdAt: item.created_at ?? null,
-      updatedAt: item.updated_at ?? null,
+      createdAt: typeof row.created_at === "string" ? row.created_at : null,
+      updatedAt: typeof row.updated_at === "string" ? row.updated_at : null,
       publicUrl,
       reference: toMediaReference(bucket, path),
     };
-  });
+    })
+    .sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
 }
 
 export async function uploadMediaObject(input: {
   visibility: MediaVisibility;
   file: File;
-  module: string;
-  locale?: AppLocale | "";
-  entityId?: string;
+  module: MediaModule;
 }): Promise<MediaLibraryItem> {
   const supabase = getSupabaseBrowserClient();
   const bucket = readBucketName(input.visibility);
   const path = buildMediaPath({
     module: input.module,
     originalFileName: input.file.name,
-    locale: input.locale,
-    entityId: input.entityId,
   });
 
   const { error } = await supabase.storage.from(bucket).upload(path, input.file, {
@@ -185,7 +229,7 @@ export async function uploadMediaObject(input: {
 export async function removeMediaObject(reference: string): Promise<void> {
   const parsed = parseMediaReference(reference);
   if (!parsed) {
-    throw new Error("Invalid media reference. Expected storage://bucket/path");
+    throw new Error("Gecersiz medya referansi. Beklenen format: storage://bucket/path");
   }
 
   const supabase = getSupabaseBrowserClient();

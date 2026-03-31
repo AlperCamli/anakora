@@ -77,7 +77,7 @@ export async function listLeads(
       programId,
       programSlug: programId ? programSlugMap.get(programId) ?? null : null,
       fullName: typeof row.full_name === "string" ? row.full_name : null,
-      email: String(row.email),
+      email: typeof row.email === "string" ? row.email : null,
       phone: typeof row.phone === "string" ? row.phone : null,
       submittedAt: String(row.submitted_at),
       updatedAt: String(row.updated_at),
@@ -100,7 +100,7 @@ export async function getLeadDetail(leadId: string): Promise<LeadDetail> {
   }
 
   if (!data) {
-    throw new Error("Lead not found.");
+    throw new Error("Lead bulunamadi.");
   }
 
   const programSlugMap = await fetchProgramSlugMap([
@@ -119,7 +119,7 @@ export async function getLeadDetail(leadId: string): Promise<LeadDetail> {
     programId,
     programSlug: programId ? programSlugMap.get(programId) ?? null : null,
     fullName: typeof row.full_name === "string" ? row.full_name : null,
-    email: String(row.email),
+    email: typeof row.email === "string" ? row.email : null,
     phone: typeof row.phone === "string" ? row.phone : null,
     submittedAt: String(row.submitted_at),
     updatedAt: String(row.updated_at),

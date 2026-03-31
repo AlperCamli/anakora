@@ -22,7 +22,8 @@ This document describes the implemented public submission flows and protections.
 - `source`: `general_contact`
 - Captures:
   - `full_name`
-  - `email`
+  - `email` (optional if phone is filled)
+  - `phone` (optional if email is filled)
   - `message`
   - metadata surface tag.
 
@@ -45,7 +46,8 @@ Validation is centralized in:
 - `src/app/lib/lead-submissions.ts`
 
 Rules:
-- Email required and format-validated.
+- For `general_contact`, at least one of `email` or `phone` is required.
+- For other flows, email remains required and format-validated.
 - Name required for non-newsletter flows.
 - Optional CAPTCHA enforcement when enabled.
 - Actionable per-field errors are returned and shown in UI.

@@ -55,7 +55,7 @@ export function AdminGuideEditorPage() {
         if (!mounted) {
           return;
         }
-        setError(loadError instanceof Error ? loadError.message : "Unknown error");
+        setError(loadError instanceof Error ? loadError.message : "Bilinmeyen hata");
       } finally {
         if (mounted) {
           setLoading(false);
@@ -104,7 +104,7 @@ export function AdminGuideEditorPage() {
 
   async function persist() {
     if (!user) {
-      setSaveError("Authenticated user could not be resolved.");
+      setSaveError("Kimligi dogrulanmis kullanici bulunamadi.");
       return;
     }
 
@@ -114,7 +114,7 @@ export function AdminGuideEditorPage() {
 
     try {
       const savedId = await saveGuide(value, user.id);
-      setSaveMessage("Guide saved successfully.");
+      setSaveMessage("Rehber kaydedildi.");
 
       if (isNew || guideId !== savedId) {
         navigate(`/admin/guides/${savedId}`, { replace: true });
@@ -124,7 +124,7 @@ export function AdminGuideEditorPage() {
       }
     } catch (persistError) {
       setSaveError(
-        persistError instanceof Error ? persistError.message : "Could not save guide.",
+        persistError instanceof Error ? persistError.message : "Rehber kaydedilemedi.",
       );
     } finally {
       setIsSaving(false);
@@ -134,14 +134,14 @@ export function AdminGuideEditorPage() {
   if (loading) {
     return (
       <AdminStateCard
-        title="Loading guide editor"
-        message="Preparing profile fields and linked program usage..."
+        title="Rehber duzenleyici yukleniyor"
+        message="Profil alanlari ve bagli program kullanimi hazirlaniyor..."
       />
     );
   }
 
   if (error) {
-    return <AdminStateCard title="Guide editor error" message={error} tone="error" />;
+    return <AdminStateCard title="Rehber duzenleyici hatasi" message={error} tone="error" />;
   }
 
   return (
@@ -149,9 +149,9 @@ export function AdminGuideEditorPage() {
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h3 className="text-lg font-medium">{isNew ? "Create guide" : "Edit guide"}</h3>
+            <h3 className="text-lg font-medium">{isNew ? "Rehber olustur" : "Rehberi duzenle"}</h3>
             <p className="text-sm text-muted-foreground">
-              Manage bilingual guide profile content and operational readiness for program linking.
+              Cift dilli rehber profili icerigini ve program baglantilarini yonetin.
             </p>
           </div>
 
@@ -161,7 +161,7 @@ export function AdminGuideEditorPage() {
             disabled={isSaving}
             className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70"
           >
-            {isSaving ? "Saving..." : "Save guide"}
+            {isSaving ? "Kaydediliyor..." : "Rehberi kaydet"}
           </button>
         </div>
 
@@ -180,7 +180,7 @@ export function AdminGuideEditorPage() {
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">Profile Core</h4>
+          <h4 className="mb-3 text-base font-medium">Profil Bilgileri</h4>
           <div className="space-y-3">
             <label className="block space-y-1 text-sm">
               <span>Slug</span>
@@ -193,7 +193,7 @@ export function AdminGuideEditorPage() {
             </label>
 
             <label className="block space-y-1 text-sm">
-              <span>Email</span>
+              <span>E-posta</span>
               <input
                 value={value.email}
                 onChange={(event) => updateField("email", event.target.value)}
@@ -203,7 +203,7 @@ export function AdminGuideEditorPage() {
             </label>
 
             <label className="block space-y-1 text-sm">
-              <span>Instagram handle</span>
+              <span>Instagram kullanici adi</span>
               <input
                 value={value.instagramHandle}
                 onChange={(event) => updateField("instagramHandle", event.target.value)}
@@ -213,7 +213,7 @@ export function AdminGuideEditorPage() {
             </label>
 
             <label className="block space-y-1 text-sm">
-              <span>Avatar image URL</span>
+              <span>Avatar gorseli URL</span>
               <input
                 value={value.avatarUrl}
                 onChange={(event) => updateField("avatarUrl", event.target.value)}
@@ -229,7 +229,7 @@ export function AdminGuideEditorPage() {
                   checked={value.isActive}
                   onChange={(event) => updateField("isActive", event.target.checked)}
                 />
-                Active profile
+                Aktif profil
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -237,16 +237,16 @@ export function AdminGuideEditorPage() {
                   checked={value.isFeatured}
                   onChange={(event) => updateField("isFeatured", event.target.checked)}
                 />
-                Featured guide
+                One cikan rehber
               </label>
             </div>
           </div>
         </div>
 
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">Linked Program Readiness</h4>
+          <h4 className="mb-3 text-base font-medium">Bagli Programlar</h4>
           <p className="text-sm text-muted-foreground">
-            Programs currently using this guide as primary contact.
+            Bu rehberi ana rehber olarak kullanan programlar.
           </p>
           <div className="mt-3 space-y-2">
             {linkedPrograms.map((program) => (
@@ -262,20 +262,20 @@ export function AdminGuideEditorPage() {
                   to={`/admin/programs/${program.id}`}
                   className="text-xs text-primary hover:underline"
                 >
-                  Open program
+                  Programi ac
                 </Link>
               </div>
             ))}
 
             {!isNew && linkedPrograms.length === 0 && (
               <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-                No programs linked to this guide yet.
+                Bu rehbere bagli program yok.
               </p>
             )}
 
             {isNew && (
               <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-                Save the guide first to track linked programs.
+                Bagli programlari gorebilmek icin once rehberi kaydedin.
               </p>
             )}
           </div>
@@ -284,10 +284,10 @@ export function AdminGuideEditorPage() {
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">TR Content</h4>
+          <h4 className="mb-3 text-base font-medium">TR Icerik</h4>
           <div className="space-y-3">
             <label className="block space-y-1 text-sm">
-              <span>Full name</span>
+              <span>Ad soyad</span>
               <input
                 value={value.tr.fullName}
                 onChange={(event) => updateTrField("fullName", event.target.value)}
@@ -295,7 +295,7 @@ export function AdminGuideEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Title</span>
+              <span>Unvan</span>
               <input
                 value={value.tr.title}
                 onChange={(event) => updateTrField("title", event.target.value)}
@@ -303,7 +303,7 @@ export function AdminGuideEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Bio</span>
+              <span>Biyografi</span>
               <textarea
                 value={value.tr.bio}
                 onChange={(event) => updateTrField("bio", event.target.value)}
@@ -315,10 +315,10 @@ export function AdminGuideEditorPage() {
         </div>
 
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">EN Content</h4>
+          <h4 className="mb-3 text-base font-medium">EN Icerik</h4>
           <div className="space-y-3">
             <label className="block space-y-1 text-sm">
-              <span>Full name</span>
+              <span>Ad soyad</span>
               <input
                 value={value.en.fullName}
                 onChange={(event) => updateEnField("fullName", event.target.value)}
@@ -326,7 +326,7 @@ export function AdminGuideEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Title</span>
+              <span>Unvan</span>
               <input
                 value={value.en.title}
                 onChange={(event) => updateEnField("title", event.target.value)}
@@ -334,7 +334,7 @@ export function AdminGuideEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Bio</span>
+              <span>Biyografi</span>
               <textarea
                 value={value.en.bio}
                 onChange={(event) => updateEnField("bio", event.target.value)}

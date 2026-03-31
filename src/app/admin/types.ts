@@ -171,7 +171,7 @@ export interface LeadListItem {
   programId: string | null;
   programSlug: string | null;
   fullName: string | null;
-  email: string;
+  email: string | null;
   phone: string | null;
   submittedAt: string;
   updatedAt: string;
@@ -338,6 +338,12 @@ export interface SiteSettingsEditorValue {
 }
 
 export type MediaVisibility = "public" | "private";
+export type MediaModule =
+  | "journal"
+  | "program"
+  | "guide"
+  | "testimonials"
+  | "homepage";
 
 export interface MediaLibraryItem {
   bucket: string;

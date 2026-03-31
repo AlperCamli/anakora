@@ -10,6 +10,7 @@ import {
 } from "../data/programs";
 import type { ProgramEditorValue, ProgramFaqValue } from "../types";
 import { AdminStateCard } from "../components/AdminStateCard";
+import { AdminImagePicker } from "../components/AdminImagePicker";
 
 function normalizeSlug(value: string): string {
   return value
@@ -85,7 +86,7 @@ export function AdminProgramEditorPage() {
         if (!mounted) {
           return;
         }
-        setError(loadError instanceof Error ? loadError.message : "Unknown error");
+        setError(loadError instanceof Error ? loadError.message : "Bilinmeyen hata");
       } finally {
         if (mounted) {
           setLoading(false);
@@ -172,7 +173,7 @@ export function AdminProgramEditorPage() {
 
   async function persist(nextStatus?: ProgramEditorValue["status"]) {
     if (!user) {
-      setSaveError("Authenticated user could not be resolved.");
+      setSaveError("Kimligi dogrulanmis kullanici bulunamadi.");
       return;
     }
 
@@ -189,8 +190,8 @@ export function AdminProgramEditorPage() {
       const savedId = await saveProgram(payload, user.id);
       setSaveMessage(
         nextStatus === "published"
-          ? "Program published and saved."
-          : "Program saved successfully.",
+          ? "Program yayina alindi ve kaydedildi."
+          : "Program kaydedildi.",
       );
 
       if (isNew || programId !== savedId) {
@@ -202,7 +203,7 @@ export function AdminProgramEditorPage() {
       }
     } catch (persistError) {
       setSaveError(
-        persistError instanceof Error ? persistError.message : "Could not save program.",
+        persistError instanceof Error ? persistError.message : "Program kaydedilemedi.",
       );
     } finally {
       setIsSaving(false);
@@ -212,15 +213,15 @@ export function AdminProgramEditorPage() {
   if (loading) {
     return (
       <AdminStateCard
-        title="Loading program editor"
-        message="Preparing content fields and linked data..."
+        title="Program duzenleyici yukleniyor"
+        message="Icerik alanlari ve bagli veriler hazirlaniyor..."
       />
     );
   }
 
   if (error) {
     return (
-      <AdminStateCard title="Program editor error" message={error} tone="error" />
+      <AdminStateCard title="Program duzenleyici hatasi" message={error} tone="error" />
     );
   }
 
@@ -230,10 +231,10 @@ export function AdminProgramEditorPage() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h3 className="text-lg font-medium">
-              {isNew ? "Create program" : "Edit program"}
+              {isNew ? "Program olustur" : "Programi duzenle"}
             </h3>
             <p className="text-sm text-muted-foreground">
-              Structured editorial form with TR/EN translations, FAQs, and operations data.
+              TR/EN ceviriler, SSS ve operasyon verileri icin yapilandirilmis editor.
             </p>
           </div>
 
@@ -244,7 +245,7 @@ export function AdminProgramEditorPage() {
               disabled={isSaving}
               className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted disabled:opacity-70"
             >
-              {isSaving ? "Saving..." : "Save changes"}
+              {isSaving ? "Kaydediliyor..." : "Degisiklikleri kaydet"}
             </button>
             <button
               type="button"
@@ -252,7 +253,7 @@ export function AdminProgramEditorPage() {
               disabled={isSaving}
               className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70"
             >
-              Publish
+              Yayinla
             </button>
             {previewSlug && (
               <a
@@ -261,7 +262,7 @@ export function AdminProgramEditorPage() {
                 rel="noreferrer"
                 className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted"
               >
-                Preview
+                Onizle
               </a>
             )}
           </div>
@@ -282,10 +283,10 @@ export function AdminProgramEditorPage() {
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">General</h4>
+          <h4 className="mb-3 text-base font-medium">Genel</h4>
           <div className="space-y-3">
             <label className="block space-y-1 text-sm">
-              <span>Slug</span>
+                <span>Slug</span>
               <input
                 value={value.slug}
                 onChange={(event) => updateField("slug", event.target.value)}
@@ -296,7 +297,7 @@ export function AdminProgramEditorPage() {
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="block space-y-1 text-sm">
-                <span>Status</span>
+                <span>Durum</span>
                 <select
                   value={value.status}
                   onChange={(event) =>
@@ -307,15 +308,15 @@ export function AdminProgramEditorPage() {
                   }
                   className="w-full rounded-md border border-border bg-background px-3 py-2"
                 >
-                  <option value="upcoming">upcoming</option>
-                  <option value="published">published</option>
-                  <option value="completed">completed</option>
-                  <option value="cancelled">cancelled</option>
+                  <option value="upcoming">yaklasan</option>
+                  <option value="published">yayinda</option>
+                  <option value="completed">tamamlandi</option>
+                  <option value="cancelled">iptal</option>
                 </select>
               </label>
 
               <label className="block space-y-1 text-sm">
-                <span>Booking mode</span>
+                <span>Rezervasyon tipi</span>
                 <select
                   value={value.bookingMode}
                   onChange={(event) =>
@@ -326,16 +327,16 @@ export function AdminProgramEditorPage() {
                   }
                   className="w-full rounded-md border border-border bg-background px-3 py-2"
                 >
-                  <option value="application">application</option>
-                  <option value="direct">direct</option>
-                  <option value="external">external</option>
+                  <option value="application">basvuru</option>
+                  <option value="direct">dogrudan</option>
+                  <option value="external">harici</option>
                 </select>
               </label>
             </div>
 
             {value.bookingMode === "external" && (
               <label className="block space-y-1 text-sm">
-                <span>External booking URL</span>
+                <span>Harici rezervasyon URL</span>
                 <input
                   value={value.externalBookingUrl}
                   onChange={(event) =>
@@ -349,7 +350,7 @@ export function AdminProgramEditorPage() {
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="block space-y-1 text-sm">
-                <span>Location name</span>
+                <span>Lokasyon adi</span>
                 <input
                   value={value.locationName}
                   onChange={(event) => updateField("locationName", event.target.value)}
@@ -358,7 +359,7 @@ export function AdminProgramEditorPage() {
               </label>
 
               <label className="block space-y-1 text-sm">
-                <span>City</span>
+                <span>Sehir</span>
                 <input
                   value={value.city}
                   onChange={(event) => updateField("city", event.target.value)}
@@ -369,7 +370,7 @@ export function AdminProgramEditorPage() {
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="block space-y-1 text-sm">
-                <span>Country code</span>
+                <span>Ulke kodu</span>
                 <input
                   value={value.countryCode}
                   onChange={(event) => updateField("countryCode", event.target.value)}
@@ -377,17 +378,14 @@ export function AdminProgramEditorPage() {
                   className="w-full rounded-md border border-border bg-background px-3 py-2 uppercase"
                 />
               </label>
-
-              <label className="block space-y-1 text-sm">
-                <span>Cover image URL</span>
-                <input
-                  value={value.coverImageUrl}
-                  onChange={(event) => updateField("coverImageUrl", event.target.value)}
-                  placeholder="https://..."
-                  className="w-full rounded-md border border-border bg-background px-3 py-2"
-                />
-              </label>
             </div>
+
+            <AdminImagePicker
+              label="Kapak gorseli"
+              module="program"
+              value={value.coverImageUrl}
+              onChange={(nextValue) => updateField("coverImageUrl", nextValue)}
+            />
 
             <div className="flex items-center gap-2 text-sm">
               <input
@@ -395,17 +393,17 @@ export function AdminProgramEditorPage() {
                 checked={value.isFeatured}
                 onChange={(event) => updateField("isFeatured", event.target.checked)}
               />
-              <span>Featured program</span>
+              <span>One cikan program</span>
             </div>
           </div>
         </div>
 
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">Schedule, Pricing, Scope</h4>
+          <h4 className="mb-3 text-base font-medium">Takvim, Fiyat ve Kapsam</h4>
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="block space-y-1 text-sm">
-                <span>Starts at</span>
+                <span>Baslangic</span>
                 <input
                   type="datetime-local"
                   value={value.startsAt}
@@ -415,7 +413,7 @@ export function AdminProgramEditorPage() {
               </label>
 
               <label className="block space-y-1 text-sm">
-                <span>Ends at</span>
+                <span>Bitis</span>
                 <input
                   type="datetime-local"
                   value={value.endsAt}
@@ -427,7 +425,7 @@ export function AdminProgramEditorPage() {
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="block space-y-1 text-sm">
-                <span>Duration days</span>
+                <span>Sure (gun)</span>
                 <input
                   value={value.durationDays}
                   onChange={(event) => updateField("durationDays", event.target.value)}
@@ -436,7 +434,7 @@ export function AdminProgramEditorPage() {
               </label>
 
               <label className="block space-y-1 text-sm">
-                <span>Duration nights</span>
+                <span>Sure (gece)</span>
                 <input
                   value={value.durationNights}
                   onChange={(event) => updateField("durationNights", event.target.value)}
@@ -446,7 +444,7 @@ export function AdminProgramEditorPage() {
             </div>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="block space-y-1 text-sm">
-                <span>Price amount</span>
+                <span>Fiyat tutari</span>
                 <input
                   value={value.priceAmount}
                   onChange={(event) => updateField("priceAmount", event.target.value)}
@@ -455,7 +453,7 @@ export function AdminProgramEditorPage() {
               </label>
 
               <label className="block space-y-1 text-sm">
-                <span>Price currency</span>
+                <span>Fiyat para birimi</span>
                 <input
                   value={value.priceCurrency}
                   onChange={(event) => updateField("priceCurrency", event.target.value)}
@@ -466,7 +464,7 @@ export function AdminProgramEditorPage() {
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="block space-y-1 text-sm">
-                <span>Capacity</span>
+                <span>Kapasite</span>
                 <input
                   value={value.capacity}
                   onChange={(event) => updateField("capacity", event.target.value)}
@@ -475,7 +473,7 @@ export function AdminProgramEditorPage() {
               </label>
 
               <label className="block space-y-1 text-sm">
-                <span>Spots left</span>
+                <span>Kalan kontenjan</span>
                 <input
                   value={value.spotsLeft}
                   onChange={(event) => updateField("spotsLeft", event.target.value)}
@@ -485,13 +483,13 @@ export function AdminProgramEditorPage() {
             </div>
 
             <label className="block space-y-1 text-sm">
-              <span>Primary guide</span>
+              <span>Ana rehber</span>
               <select
                 value={value.primaryGuideId}
                 onChange={(event) => updateField("primaryGuideId", event.target.value)}
                 className="w-full rounded-md border border-border bg-background px-3 py-2"
               >
-                <option value="">No linked guide</option>
+                <option value="">Bagli rehber yok</option>
                 {guides.map((guide) => (
                   <option key={guide.id} value={guide.id}>
                     {guide.name} ({guide.slug})
@@ -501,7 +499,7 @@ export function AdminProgramEditorPage() {
             </label>
 
             <div className="space-y-2">
-              <p className="text-sm">Type / Scope (program categories)</p>
+              <p className="text-sm">Tip / Kapsam (program kategorileri)</p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {categories.map((category) => (
                   <label
@@ -526,10 +524,10 @@ export function AdminProgramEditorPage() {
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">TR Content</h4>
+          <h4 className="mb-3 text-base font-medium">TR Icerik</h4>
           <div className="space-y-3">
             <label className="block space-y-1 text-sm">
-              <span>Title</span>
+              <span>Baslik</span>
               <input
                 value={value.tr.title}
                 onChange={(event) => updateTrField("title", event.target.value)}
@@ -537,7 +535,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Subtitle</span>
+              <span>Alt baslik</span>
               <input
                 value={value.tr.subtitle}
                 onChange={(event) => updateTrField("subtitle", event.target.value)}
@@ -545,7 +543,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Summary</span>
+              <span>Ozet</span>
               <textarea
                 value={value.tr.summary}
                 onChange={(event) => updateTrField("summary", event.target.value)}
@@ -554,7 +552,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Story markdown</span>
+              <span>Hikaye markdown</span>
               <textarea
                 value={value.tr.storyMarkdown}
                 onChange={(event) => updateTrField("storyMarkdown", event.target.value)}
@@ -563,7 +561,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Cover image alt</span>
+              <span>Kapak gorseli alt metin</span>
               <input
                 value={value.tr.coverImageAlt}
                 onChange={(event) => updateTrField("coverImageAlt", event.target.value)}
@@ -571,7 +569,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Who is it for (one line per item)</span>
+              <span>Kimler icin? (her satir bir madde)</span>
               <textarea
                 value={value.tr.whoIsItFor}
                 onChange={(event) => updateTrField("whoIsItFor", event.target.value)}
@@ -580,7 +578,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Itinerary JSON array</span>
+              <span>Itinerary JSON dizisi</span>
               <textarea
                 value={value.tr.itineraryJson}
                 onChange={(event) => updateTrField("itineraryJson", event.target.value)}
@@ -589,7 +587,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Included items (one line per item)</span>
+              <span>Dahil olanlar (her satir bir madde)</span>
               <textarea
                 value={value.tr.includedItems}
                 onChange={(event) => updateTrField("includedItems", event.target.value)}
@@ -598,7 +596,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Excluded items (one line per item)</span>
+              <span>Haric olanlar (her satir bir madde)</span>
               <textarea
                 value={value.tr.excludedItems}
                 onChange={(event) => updateTrField("excludedItems", event.target.value)}
@@ -607,7 +605,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>SEO title</span>
+              <span>SEO baslik</span>
               <input
                 value={value.tr.seoTitle}
                 onChange={(event) => updateTrField("seoTitle", event.target.value)}
@@ -615,7 +613,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>SEO description</span>
+              <span>SEO aciklama</span>
               <textarea
                 value={value.tr.seoDescription}
                 onChange={(event) => updateTrField("seoDescription", event.target.value)}
@@ -627,10 +625,10 @@ export function AdminProgramEditorPage() {
         </div>
 
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h4 className="mb-3 text-base font-medium">EN Content</h4>
+          <h4 className="mb-3 text-base font-medium">EN Icerik</h4>
           <div className="space-y-3">
             <label className="block space-y-1 text-sm">
-              <span>Title</span>
+              <span>Baslik</span>
               <input
                 value={value.en.title}
                 onChange={(event) => updateEnField("title", event.target.value)}
@@ -638,7 +636,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Subtitle</span>
+              <span>Alt baslik</span>
               <input
                 value={value.en.subtitle}
                 onChange={(event) => updateEnField("subtitle", event.target.value)}
@@ -646,7 +644,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Summary</span>
+              <span>Ozet</span>
               <textarea
                 value={value.en.summary}
                 onChange={(event) => updateEnField("summary", event.target.value)}
@@ -655,7 +653,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Story markdown</span>
+              <span>Hikaye markdown</span>
               <textarea
                 value={value.en.storyMarkdown}
                 onChange={(event) => updateEnField("storyMarkdown", event.target.value)}
@@ -664,7 +662,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Cover image alt</span>
+              <span>Kapak gorseli alt metin</span>
               <input
                 value={value.en.coverImageAlt}
                 onChange={(event) => updateEnField("coverImageAlt", event.target.value)}
@@ -672,7 +670,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Who is it for (one line per item)</span>
+              <span>Kimler icin? (her satir bir madde)</span>
               <textarea
                 value={value.en.whoIsItFor}
                 onChange={(event) => updateEnField("whoIsItFor", event.target.value)}
@@ -681,7 +679,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Itinerary JSON array</span>
+              <span>Itinerary JSON dizisi</span>
               <textarea
                 value={value.en.itineraryJson}
                 onChange={(event) => updateEnField("itineraryJson", event.target.value)}
@@ -690,7 +688,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Included items (one line per item)</span>
+              <span>Dahil olanlar (her satir bir madde)</span>
               <textarea
                 value={value.en.includedItems}
                 onChange={(event) => updateEnField("includedItems", event.target.value)}
@@ -699,7 +697,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>Excluded items (one line per item)</span>
+              <span>Haric olanlar (her satir bir madde)</span>
               <textarea
                 value={value.en.excludedItems}
                 onChange={(event) => updateEnField("excludedItems", event.target.value)}
@@ -708,7 +706,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>SEO title</span>
+              <span>SEO baslik</span>
               <input
                 value={value.en.seoTitle}
                 onChange={(event) => updateEnField("seoTitle", event.target.value)}
@@ -716,7 +714,7 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
-              <span>SEO description</span>
+              <span>SEO aciklama</span>
               <textarea
                 value={value.en.seoDescription}
                 onChange={(event) => updateEnField("seoDescription", event.target.value)}
@@ -730,7 +728,7 @@ export function AdminProgramEditorPage() {
 
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <h4 className="text-base font-medium">FAQs (TR/EN)</h4>
+          <h4 className="text-base font-medium">SSS (TR/EN)</h4>
           <button
             type="button"
             onClick={() =>
@@ -738,7 +736,7 @@ export function AdminProgramEditorPage() {
             }
             className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
           >
-            Add FAQ
+            SSS ekle
           </button>
         </div>
 
@@ -746,7 +744,7 @@ export function AdminProgramEditorPage() {
           {value.faqs.map((faq, index) => (
             <div key={index} className="rounded-md border border-border p-3">
               <div className="mb-3 flex items-center justify-between">
-                <p className="text-sm font-medium">FAQ #{index + 1}</p>
+                <p className="text-sm font-medium">SSS #{index + 1}</p>
                 <div className="flex items-center gap-3">
                   <label className="flex items-center gap-2 text-xs text-muted-foreground">
                     <input
@@ -756,14 +754,14 @@ export function AdminProgramEditorPage() {
                         updateFaq(index, { isActive: event.target.checked })
                       }
                     />
-                    Active
+                    Aktif
                   </label>
                   <button
                     type="button"
                     onClick={() => removeFaq(index)}
                     className="text-xs text-destructive hover:underline"
                   >
-                    Remove
+                    Sil
                   </button>
                 </div>
               </div>
@@ -775,7 +773,7 @@ export function AdminProgramEditorPage() {
                     onChange={(event) =>
                       updateFaq(index, { trQuestion: event.target.value })
                     }
-                    placeholder="TR question"
+                    placeholder="TR soru"
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   />
                   <textarea
@@ -783,7 +781,7 @@ export function AdminProgramEditorPage() {
                     onChange={(event) =>
                       updateFaq(index, { trAnswer: event.target.value })
                     }
-                    placeholder="TR answer"
+                    placeholder="TR cevap"
                     rows={3}
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   />
@@ -796,7 +794,7 @@ export function AdminProgramEditorPage() {
                     onChange={(event) =>
                       updateFaq(index, { enQuestion: event.target.value })
                     }
-                    placeholder="EN question"
+                    placeholder="EN soru"
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   />
                   <textarea
@@ -804,7 +802,7 @@ export function AdminProgramEditorPage() {
                     onChange={(event) =>
                       updateFaq(index, { enAnswer: event.target.value })
                     }
-                    placeholder="EN answer"
+                    placeholder="EN cevap"
                     rows={3}
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   />
@@ -814,30 +812,30 @@ export function AdminProgramEditorPage() {
           ))}
 
           {value.faqs.length === 0 && (
-            <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-              No FAQ items yet.
-            </p>
+              <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
+              Henuz SSS maddesi yok.
+              </p>
           )}
         </div>
       </section>
 
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <h4 className="text-base font-medium">Gallery management hook</h4>
+        <h4 className="text-base font-medium">Galeri yonetim alani</h4>
         <p className="mt-1 text-sm text-muted-foreground">
           {isNew
-            ? "Save the program first to enable gallery item management."
-            : `This program currently has ${galleryCount} gallery item(s). Full gallery CRUD can be added on top of program_gallery_items from this hook.`}
+            ? "Galeri yonetimi icin once programi kaydetmelisiniz."
+            : `Bu programda su an ${galleryCount} galeri oge(si) var. Tam galeri CRUD akisi program_gallery_items uzerinden bu alana genisletilebilir.`}
         </p>
         <div className="mt-3 flex items-center gap-2">
           <Link
             to="/admin/media"
             className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
           >
-            Open media library
+            Medya kutuphanesini ac
           </Link>
           {!isNew && (
             <span className="text-xs text-muted-foreground">
-              Program ID: {programId}
+              Program kimligi: {programId}
             </span>
           )}
         </div>

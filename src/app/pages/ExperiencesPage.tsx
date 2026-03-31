@@ -16,6 +16,7 @@ export function ExperiencesPage() {
 
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [contactHoneypot, setContactHoneypot] = useState("");
   const [contactSubmitting, setContactSubmitting] = useState(false);
@@ -90,6 +91,7 @@ export function ExperiencesPage() {
       locale,
       fullName: contactName,
       email: contactEmail,
+      phone: contactPhone,
       message: contactMessage,
       honeypot: contactHoneypot,
       metadata: {
@@ -102,6 +104,7 @@ export function ExperiencesPage() {
       setContactError(
         result.fieldErrors?.fullName ??
           result.fieldErrors?.email ??
+          result.fieldErrors?.phone ??
           result.errorMessage ??
           (locale === "en"
             ? "Message could not be sent right now."
@@ -112,6 +115,7 @@ export function ExperiencesPage() {
 
     setContactName("");
     setContactEmail("");
+    setContactPhone("");
     setContactMessage("");
     setContactHoneypot("");
     setContactSuccess(
@@ -247,7 +251,14 @@ export function ExperiencesPage() {
               type="email"
               value={contactEmail}
               onChange={(event) => setContactEmail(event.target.value)}
-              placeholder={locale === "en" ? "Email" : "E-posta"}
+              placeholder={locale === "en" ? "Email (or phone)" : "E-posta (veya telefon)"}
+              className="px-4 py-3 border border-border rounded-sm bg-background"
+            />
+            <input
+              type="tel"
+              value={contactPhone}
+              onChange={(event) => setContactPhone(event.target.value)}
+              placeholder={locale === "en" ? "Phone (or email)" : "Telefon (veya e-posta)"}
               className="px-4 py-3 border border-border rounded-sm bg-background"
             />
             <textarea
@@ -270,6 +281,11 @@ export function ExperiencesPage() {
                   ? "Send Message"
                   : "Mesaji Gonder"}
             </button>
+            <p className="sm:col-span-2 text-xs text-muted-foreground">
+              {locale === "en"
+                ? "Full name and at least one contact method (email or phone) are required."
+                : "Ad soyad ve en az bir iletisim bilgisi (e-posta veya telefon) zorunludur."}
+            </p>
           </form>
 
           {contactError && (

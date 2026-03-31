@@ -121,7 +121,7 @@ export async function getGuideEditorById(guideId: string): Promise<GuideEditorVa
     throw new Error(guideError.message);
   }
   if (!guideData) {
-    throw new Error("Guide not found.");
+    throw new Error("Rehber bulunamadi.");
   }
 
   const { data: translationData, error: translationError } = await supabase
@@ -191,10 +191,10 @@ export async function saveGuide(
 
   const slug = normalizeSlug(values.slug || values.tr.fullName || values.en.fullName);
   if (!slug) {
-    throw new Error("Guide slug is required.");
+    throw new Error("Rehber slug alani zorunludur.");
   }
   if (!values.tr.fullName.trim() || !values.en.fullName.trim()) {
-    throw new Error("Both TR and EN full names are required.");
+    throw new Error("TR ve EN ad soyad alanlari zorunludur.");
   }
 
   const payload = {

@@ -5,18 +5,18 @@ import type { BookingMode, ProgramListItem, ProgramStatus } from "../types";
 import { AdminStateCard } from "../components/AdminStateCard";
 
 const STATUS_OPTIONS: Array<{ label: string; value: ProgramStatus | "all" }> = [
-  { label: "All statuses", value: "all" },
-  { label: "Upcoming", value: "upcoming" },
-  { label: "Published", value: "published" },
-  { label: "Completed", value: "completed" },
-  { label: "Cancelled", value: "cancelled" },
+  { label: "Tum durumlar", value: "all" },
+  { label: "Yaklasan", value: "upcoming" },
+  { label: "Yayinda", value: "published" },
+  { label: "Tamamlandi", value: "completed" },
+  { label: "Iptal", value: "cancelled" },
 ];
 
 const BOOKING_OPTIONS: Array<{ label: string; value: BookingMode | "all" }> = [
-  { label: "All booking modes", value: "all" },
-  { label: "Application", value: "application" },
-  { label: "Direct", value: "direct" },
-  { label: "External", value: "external" },
+  { label: "Tum rezervasyon tipleri", value: "all" },
+  { label: "Basvuru", value: "application" },
+  { label: "Dogrudan", value: "direct" },
+  { label: "Harici", value: "external" },
 ];
 
 function formatDate(value: string): string {
@@ -24,7 +24,7 @@ function formatDate(value: string): string {
   if (Number.isNaN(date.getTime())) {
     return "-";
   }
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -37,7 +37,7 @@ function formatCurrency(amount: number | null, currency: string | null): string 
   }
 
   try {
-    return new Intl.NumberFormat("en", {
+    return new Intl.NumberFormat("tr-TR", {
       style: "currency",
       currency: currency || "TRY",
       maximumFractionDigits: 0,
@@ -90,7 +90,7 @@ export function AdminProgramsPage() {
         if (!mounted) {
           return;
         }
-        setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+        setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
       } finally {
         if (mounted) {
           setLoading(false);
@@ -167,8 +167,8 @@ export function AdminProgramsPage() {
   if (loading) {
     return (
       <AdminStateCard
-        title="Loading programs"
-        message="Fetching the full program catalog..."
+        title="Programlar yukleniyor"
+        message="Program katalogu getiriliyor..."
       />
     );
   }
@@ -176,7 +176,7 @@ export function AdminProgramsPage() {
   if (error) {
     return (
       <AdminStateCard
-        title="Programs unavailable"
+        title="Programlar kullanilamiyor"
         message={error}
         tone="error"
       />
@@ -187,16 +187,16 @@ export function AdminProgramsPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h3 className="text-lg font-medium">Programs catalog</h3>
+          <h3 className="text-lg font-medium">Program katalogu</h3>
           <p className="text-sm text-muted-foreground">
-            {filtered.length} results shown from {items.length} total programs.
+            Toplam {items.length} programdan {filtered.length} sonuc gosteriliyor.
           </p>
         </div>
         <Link
           to="/admin/programs/new"
           className="inline-flex rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
         >
-          New program
+          Yeni program
         </Link>
       </div>
 
@@ -204,7 +204,7 @@ export function AdminProgramsPage() {
         <input
           value={searchText}
           onChange={(event) => setSearchText(event.target.value)}
-          placeholder="Search slug/title/location"
+          placeholder="Slug/baslik/lokasyon ara"
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
 
@@ -245,10 +245,10 @@ export function AdminProgramsPage() {
           }
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
         >
-          <option value="starts_desc">Starts date: newest</option>
-          <option value="starts_asc">Starts date: oldest</option>
-          <option value="updated_desc">Recently updated</option>
-          <option value="title_asc">Title A-Z</option>
+          <option value="starts_desc">Baslangic tarihi: yeni-eski</option>
+          <option value="starts_asc">Baslangic tarihi: eski-yeni</option>
+          <option value="updated_desc">Son guncellenenler</option>
+          <option value="title_asc">Baslik A-Z</option>
         </select>
 
         <label className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm">
@@ -257,7 +257,7 @@ export function AdminProgramsPage() {
             checked={featuredOnly}
             onChange={(event) => setFeaturedOnly(event.target.checked)}
           />
-          Featured only
+          Sadece one cikanlar
         </label>
       </div>
 
@@ -266,18 +266,18 @@ export function AdminProgramsPage() {
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Program</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Booking</th>
-              <th className="px-4 py-3">Dates</th>
-              <th className="px-4 py-3">Price</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">Durum</th>
+              <th className="px-4 py-3">Rezervasyon</th>
+              <th className="px-4 py-3">Tarihler</th>
+              <th className="px-4 py-3">Fiyat</th>
+              <th className="px-4 py-3">Islemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {filtered.map((item) => (
               <tr key={item.id} className="align-top">
                 <td className="px-4 py-3">
-                  <p className="font-medium">{item.trTitle || item.enTitle || "Untitled"}</p>
+                  <p className="font-medium">{item.trTitle || item.enTitle || "Basliksiz"}</p>
                   <p className="text-xs text-muted-foreground">EN: {item.enTitle || "-"}</p>
                   <p className="mt-1 text-xs text-muted-foreground">/{item.slug}</p>
                 </td>
@@ -288,7 +288,7 @@ export function AdminProgramsPage() {
                     {item.status}
                   </span>
                   {item.isFeatured && (
-                    <p className="mt-1 text-xs text-terracotta">Featured</p>
+                    <p className="mt-1 text-xs text-terracotta">One cikan</p>
                   )}
                 </td>
                 <td className="px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
@@ -307,7 +307,7 @@ export function AdminProgramsPage() {
                       to={`/admin/programs/${item.id}`}
                       className="text-primary hover:underline"
                     >
-                      Edit
+                      Duzenle
                     </Link>
                     <a
                       href={`/deneyimler/${item.slug}`}
@@ -315,7 +315,7 @@ export function AdminProgramsPage() {
                       rel="noreferrer"
                       className="text-muted-foreground hover:underline"
                     >
-                      Preview
+                      Onizle
                     </a>
                   </div>
                 </td>
@@ -324,7 +324,7 @@ export function AdminProgramsPage() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  No programs match the current filters.
+                  Secili filtrelere uygun program bulunamadi.
                 </td>
               </tr>
             )}

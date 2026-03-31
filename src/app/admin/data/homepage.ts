@@ -19,15 +19,15 @@ export const HOMEPAGE_SECTION_ORDER: HomepageSectionKey[] = [
 ];
 
 const SECTION_HINTS: Record<HomepageSectionKey, string> = {
-  hero: 'Supports only `primaryCta` and `secondaryCta` link objects: {"label":"...","href":"..."}',
-  brand_manifesto: "No custom payload fields are used by the current public UI.",
-  experience_categories: "No custom payload fields are used by the current public UI.",
-  upcoming_programs: "No custom payload fields are used by the current public UI.",
-  why_anakora: 'Supports `items` array: [{"title":"...","description":"..."}]',
-  archive_preview: "No custom payload fields are used by the current public UI.",
-  testimonials: "No custom payload fields are used by the current public UI.",
-  journal_preview: "No custom payload fields are used by the current public UI.",
-  final_cta: "No custom payload fields are used by the current public UI.",
+  hero: 'Sadece `primaryCta` ve `secondaryCta` link nesneleri desteklenir: {"label":"...","href":"..."}',
+  brand_manifesto: "Mevcut public arayuzde ozel payload alani kullanilmiyor.",
+  experience_categories: "Mevcut public arayuzde ozel payload alani kullanilmiyor.",
+  upcoming_programs: "Mevcut public arayuzde ozel payload alani kullanilmiyor.",
+  why_anakora: 'Sadece `items` dizisi desteklenir: [{"title":"...","description":"..."}]',
+  archive_preview: "Mevcut public arayuzde ozel payload alani kullanilmiyor.",
+  testimonials: "Mevcut public arayuzde ozel payload alani kullanilmiyor.",
+  journal_preview: "Mevcut public arayuzde ozel payload alani kullanilmiyor.",
+  final_cta: "Mevcut public arayuzde ozel payload alani kullanilmiyor.",
 };
 
 const DEFAULT_PAYLOADS: Record<HomepageSectionKey, Record<string, unknown>> = {
@@ -185,8 +185,8 @@ export async function listHomepageSections(): Promise<HomepageSectionEditorValue
   }
 
   return HOMEPAGE_SECTION_ORDER.map((key) => map.get(key)!).sort((a, b) => {
-    const sortA = parseInteger(a.tr.sortOrder, "Sort order") ?? 0;
-    const sortB = parseInteger(b.tr.sortOrder, "Sort order") ?? 0;
+    const sortA = parseInteger(a.tr.sortOrder, "Siralama") ?? 0;
+    const sortB = parseInteger(b.tr.sortOrder, "Siralama") ?? 0;
     return sortA - sortB;
   });
 }
@@ -199,7 +199,7 @@ export async function saveHomepageSections(
   const upsertRows: Array<Record<string, unknown>> = [];
 
   for (const section of sections) {
-    const globalSortOrder = parseInteger(section.tr.sortOrder, `${section.key} sort order`) ?? 0;
+    const globalSortOrder = parseInteger(section.tr.sortOrder, `${section.key} siralama`) ?? 0;
     const globalActive = section.tr.isActive;
 
     const trPayload = sanitizeHomepagePayload(

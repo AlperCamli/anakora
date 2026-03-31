@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminLocaleCompleteness } from "../components/AdminLocaleCompleteness";
 import { AdminRoleGate } from "../components/AdminRoleGate";
 import { AdminStateCard } from "../components/AdminStateCard";
+import { AdminImagePicker } from "../components/AdminImagePicker";
 import { useAdminAuth } from "../context/AdminAuthContext";
+import { MarkdownContent } from "../../components/MarkdownContent";
 import {
   createEmptyJournalCategoryEditorValue,
   createEmptyJournalPostEditorValue,
@@ -31,7 +33,7 @@ function formatDateTime(value: string | null) {
   if (Number.isNaN(parsed.getTime())) {
     return value;
   }
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -101,7 +103,7 @@ function JournalAdminPageContent() {
         setPosts(nextPosts);
       } catch (fetchError) {
         if (mounted) {
-          setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+          setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
         }
       } finally {
         if (mounted) {
@@ -146,7 +148,7 @@ function JournalAdminPageContent() {
       setSelectedPostId(postId);
       setPostEditor(value);
     } catch (loadError) {
-      setPostError(loadError instanceof Error ? loadError.message : "Could not load post.");
+      setPostError(loadError instanceof Error ? loadError.message : "Icerik yuklenemedi.");
     } finally {
       setPostLoading(false);
     }
@@ -154,7 +156,7 @@ function JournalAdminPageContent() {
 
   async function persistPost(statusOverride?: JournalPostStatus) {
     if (!user) {
-      setPostError("Authenticated user could not be resolved.");
+      setPostError("Kimligi dogrulanmis kullanici bulunamadi.");
       return;
     }
 
@@ -169,10 +171,10 @@ function JournalAdminPageContent() {
       await refreshAll();
       setSelectedPostId(savedId);
       setPostEditor(await getJournalPostEditorById(savedId));
-      setPostMessage(statusOverride === "published" ? "Post published." : "Post saved.");
+      setPostMessage(statusOverride === "published" ? "Icerik yayina alindi." : "Icerik kaydedildi.");
     } catch (persistError) {
       setPostError(
-        persistError instanceof Error ? persistError.message : "Could not save post.",
+        persistError instanceof Error ? persistError.message : "Icerik kaydedilemedi.",
       );
     } finally {
       setPostSaving(false);
@@ -195,7 +197,7 @@ function JournalAdminPageContent() {
       setCategoryEditor(value);
     } catch (loadError) {
       setCategoryError(
-        loadError instanceof Error ? loadError.message : "Could not load category.",
+        loadError instanceof Error ? loadError.message : "Kategori yuklenemedi.",
       );
     } finally {
       setCategoryLoading(false);
@@ -211,10 +213,10 @@ function JournalAdminPageContent() {
       await refreshAll();
       setSelectedCategoryId(savedId);
       setCategoryEditor(await getJournalCategoryEditorById(savedId));
-      setCategoryMessage(categoryEditor.id ? "Category updated." : "Category created.");
+      setCategoryMessage(categoryEditor.id ? "Kategori guncellendi." : "Kategori olusturuldu.");
     } catch (persistError) {
       setCategoryError(
-        persistError instanceof Error ? persistError.message : "Could not save category.",
+        persistError instanceof Error ? persistError.message : "Kategori kaydedilemedi.",
       );
     } finally {
       setCategorySaving(false);
@@ -222,11 +224,11 @@ function JournalAdminPageContent() {
   }
 
   if (loading) {
-    return <AdminStateCard title="Loading journal module" message="Preparing posts and categories..." />;
+    return <AdminStateCard title="Jurnal modulu yukleniyor" message="Icerikler ve kategoriler hazirlaniyor..." />;
   }
 
   if (error) {
-    return <AdminStateCard title="Journal unavailable" message={error} tone="error" />;
+    return <AdminStateCard title="Jurnal modulu kullanilamiyor" message={error} tone="error" />;
   }
 
   return (
@@ -234,9 +236,9 @@ function JournalAdminPageContent() {
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-medium">Journal</h3>
+            <h3 className="text-lg font-medium">Jurnal</h3>
             <p className="text-sm text-muted-foreground">
-              {filteredPosts.length} posts from {posts.length}.
+              Toplam {posts.length} icerikten {filteredPosts.length} sonuc.
             </p>
           </div>
           <button
@@ -244,7 +246,7 @@ function JournalAdminPageContent() {
             onClick={resetPostEditor}
             className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
           >
-            New post
+            Yeni icerik
           </button>
         </div>
       </div>
@@ -253,7 +255,7 @@ function JournalAdminPageContent() {
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search slug/title"
+          placeholder="Slug/baslik ara"
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
         <select
@@ -261,10 +263,10 @@ function JournalAdminPageContent() {
           onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
         >
-          <option value="all">All statuses</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
+          <option value="all">Tum durumlar</option>
+          <option value="draft">Taslak</option>
+          <option value="published">Yayinda</option>
+          <option value="archived">Arsiv</option>
         </select>
       </div>
 
@@ -273,9 +275,9 @@ function JournalAdminPageContent() {
           <table className="min-w-full divide-y divide-border text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
               <tr>
-                <th className="px-4 py-3">Post</th>
-                <th className="px-4 py-3">Locale</th>
-                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Icerik</th>
+                <th className="px-4 py-3">Dil</th>
+                <th className="px-4 py-3">Durum</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -289,7 +291,7 @@ function JournalAdminPageContent() {
                     <p className="font-medium">{post.trTitle || post.enTitle || post.slug}</p>
                     <p className="mt-1 text-xs text-muted-foreground">/{post.slug}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {post.categoryCount} categories • {post.readingTimeMinutes ?? "-"} min
+                      {post.categoryCount} kategori • {post.readingTimeMinutes ?? "-"} dk
                     </p>
                   </td>
                   <td className="px-4 py-3">
@@ -307,7 +309,7 @@ function JournalAdminPageContent() {
               {filteredPosts.length === 0 && (
                 <tr>
                   <td colSpan={3} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                    No journal post found for selected filters.
+                    Secili filtreler icin icerik bulunamadi.
                   </td>
                 </tr>
               )}
@@ -395,25 +397,30 @@ function JournalPostEditor({
   onPublish: () => void;
 }) {
   if (loading) {
-    return <AdminStateCard title="Loading editor" message="Retrieving post fields..." />;
+    return <AdminStateCard title="Duzenleyici yukleniyor" message="Icerik alanlari getiriliyor..." />;
   }
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <h4 className="text-base font-medium">{selectedPostId ? "Edit post" : "Create post"}</h4>
-      <p className="text-xs text-muted-foreground">TR/EN content, categories, and publish flow.</p>
+      <h4 className="text-base font-medium">{selectedPostId ? "Icerigi duzenle" : "Icerik olustur"}</h4>
+      <p className="text-xs text-muted-foreground">TR/EN icerik, kategori ve yayin akisi.</p>
       <div className="mt-3 space-y-2">
         <input value={value.slug} onChange={(event) => onFieldChange("slug", event.target.value)} placeholder="slug" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
         <div className="grid grid-cols-2 gap-2">
-          <select value={value.status} onChange={(event) => onFieldChange("status", event.target.value as JournalPostStatus)} className="rounded-md border border-border bg-background px-3 py-2 text-sm"><option value="draft">draft</option><option value="published">published</option><option value="archived">archived</option></select>
-          <input value={value.readingTimeMinutes} onChange={(event) => onFieldChange("readingTimeMinutes", event.target.value)} placeholder="reading time" className="rounded-md border border-border bg-background px-3 py-2 text-sm" />
+          <select value={value.status} onChange={(event) => onFieldChange("status", event.target.value as JournalPostStatus)} className="rounded-md border border-border bg-background px-3 py-2 text-sm"><option value="draft">taslak</option><option value="published">yayinda</option><option value="archived">arsiv</option></select>
+          <input value={value.readingTimeMinutes} onChange={(event) => onFieldChange("readingTimeMinutes", event.target.value)} placeholder="okuma suresi (dk)" className="rounded-md border border-border bg-background px-3 py-2 text-sm" />
         </div>
         <input type="datetime-local" value={value.publishedAt} onChange={(event) => onFieldChange("publishedAt", event.target.value)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <select value={value.primaryGuideId} onChange={(event) => onFieldChange("primaryGuideId", event.target.value)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"><option value="">No guide</option>{guides.map((guide) => <option key={guide.id} value={guide.id}>{guide.name}</option>)}</select>
-        <input value={value.coverImageUrl} onChange={(event) => onFieldChange("coverImageUrl", event.target.value)} placeholder="cover image url" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"><input type="checkbox" checked={value.isFeatured} onChange={(event) => onFieldChange("isFeatured", event.target.checked)} />Featured</label>
+        <select value={value.primaryGuideId} onChange={(event) => onFieldChange("primaryGuideId", event.target.value)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"><option value="">Rehber yok</option>{guides.map((guide) => <option key={guide.id} value={guide.id}>{guide.name}</option>)}</select>
+        <AdminImagePicker
+          label="Kapak gorseli"
+          module="journal"
+          value={value.coverImageUrl}
+          onChange={(nextValue) => onFieldChange("coverImageUrl", nextValue)}
+        />
+        <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"><input type="checkbox" checked={value.isFeatured} onChange={(event) => onFieldChange("isFeatured", event.target.checked)} />One cikan</label>
         <div className="rounded-md border border-border p-2 text-xs">
-          <p className="mb-1 font-medium">Categories</p>
+          <p className="mb-1 font-medium">Kategoriler</p>
           <div className="grid grid-cols-1 gap-1">
             {categories.map((category) => (
               <label key={category.id} className="flex items-center gap-2">
@@ -423,22 +430,40 @@ function JournalPostEditor({
             ))}
           </div>
         </div>
-        <textarea value={value.tr.title} onChange={(event) => onTrChange("title", event.target.value)} rows={2} placeholder="TR title" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <textarea value={value.tr.excerpt} onChange={(event) => onTrChange("excerpt", event.target.value)} rows={2} placeholder="TR excerpt" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <textarea value={value.tr.title} onChange={(event) => onTrChange("title", event.target.value)} rows={2} placeholder="TR baslik" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <textarea value={value.tr.excerpt} onChange={(event) => onTrChange("excerpt", event.target.value)} rows={2} placeholder="TR ozet" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
         <textarea value={value.tr.contentMarkdown} onChange={(event) => onTrChange("contentMarkdown", event.target.value)} rows={4} placeholder="TR markdown" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.tr.coverImageAlt} onChange={(event) => onTrChange("coverImageAlt", event.target.value)} placeholder="TR cover alt" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.tr.seoTitle} onChange={(event) => onTrChange("seoTitle", event.target.value)} placeholder="TR SEO title" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <textarea value={value.tr.seoDescription} onChange={(event) => onTrChange("seoDescription", event.target.value)} rows={2} placeholder="TR SEO description" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <textarea value={value.en.title} onChange={(event) => onEnChange("title", event.target.value)} rows={2} placeholder="EN title" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <textarea value={value.en.excerpt} onChange={(event) => onEnChange("excerpt", event.target.value)} rows={2} placeholder="EN excerpt" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <div className="rounded-md border border-border p-3">
+          <p className="mb-2 text-xs uppercase tracking-[0.1em] text-muted-foreground">
+            TR Markdown Onizleme
+          </p>
+          <MarkdownContent
+            content={value.tr.contentMarkdown || "_Onizleme icin markdown icerigi girin._"}
+            className="prose prose-sm max-w-none text-foreground/90"
+          />
+        </div>
+        <input value={value.tr.coverImageAlt} onChange={(event) => onTrChange("coverImageAlt", event.target.value)} placeholder="TR kapak alt metin" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.tr.seoTitle} onChange={(event) => onTrChange("seoTitle", event.target.value)} placeholder="TR SEO baslik" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <textarea value={value.tr.seoDescription} onChange={(event) => onTrChange("seoDescription", event.target.value)} rows={2} placeholder="TR SEO aciklama" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <textarea value={value.en.title} onChange={(event) => onEnChange("title", event.target.value)} rows={2} placeholder="EN baslik" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <textarea value={value.en.excerpt} onChange={(event) => onEnChange("excerpt", event.target.value)} rows={2} placeholder="EN ozet" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
         <textarea value={value.en.contentMarkdown} onChange={(event) => onEnChange("contentMarkdown", event.target.value)} rows={4} placeholder="EN markdown" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.en.coverImageAlt} onChange={(event) => onEnChange("coverImageAlt", event.target.value)} placeholder="EN cover alt" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <input value={value.en.seoTitle} onChange={(event) => onEnChange("seoTitle", event.target.value)} placeholder="EN SEO title" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        <textarea value={value.en.seoDescription} onChange={(event) => onEnChange("seoDescription", event.target.value)} rows={2} placeholder="EN SEO description" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <div className="rounded-md border border-border p-3">
+          <p className="mb-2 text-xs uppercase tracking-[0.1em] text-muted-foreground">
+            EN Markdown Onizleme
+          </p>
+          <MarkdownContent
+            content={value.en.contentMarkdown || "_Onizleme icin markdown icerigi girin._"}
+            className="prose prose-sm max-w-none text-foreground/90"
+          />
+        </div>
+        <input value={value.en.coverImageAlt} onChange={(event) => onEnChange("coverImageAlt", event.target.value)} placeholder="EN kapak alt metin" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <input value={value.en.seoTitle} onChange={(event) => onEnChange("seoTitle", event.target.value)} placeholder="EN SEO baslik" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+        <textarea value={value.en.seoDescription} onChange={(event) => onEnChange("seoDescription", event.target.value)} rows={2} placeholder="EN SEO aciklama" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
         {(message || error) && <p className={`rounded-md px-3 py-2 text-sm ${error ? "border border-destructive/20 bg-destructive/5 text-destructive" : "border border-primary/20 bg-primary/10 text-primary"}`}>{error || message}</p>}
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={onSave} disabled={saving} className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted disabled:opacity-70">{saving ? "Saving..." : "Save"}</button>
-          <button type="button" onClick={onPublish} disabled={saving} className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70">Publish</button>
+          <button type="button" onClick={onSave} disabled={saving} className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted disabled:opacity-70">{saving ? "Kaydediliyor..." : "Kaydet"}</button>
+          <button type="button" onClick={onPublish} disabled={saving} className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70">Yayinla</button>
         </div>
       </div>
     </div>
@@ -473,8 +498,8 @@ function JournalCategoryEditor({
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
-        <h4 className="text-base font-medium">Categories</h4>
-        <button type="button" onClick={onNew} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted">New</button>
+        <h4 className="text-base font-medium">Kategoriler</h4>
+        <button type="button" onClick={onNew} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted">Yeni</button>
       </div>
       <div className="space-y-2">
         {categories.map((category) => (
@@ -486,19 +511,19 @@ function JournalCategoryEditor({
       </div>
       <div className="mt-3 space-y-2 rounded-md border border-border p-3">
         {loading ? (
-          <AdminStateCard title="Loading category" message="Preparing category fields..." />
+          <AdminStateCard title="Kategori yukleniyor" message="Kategori alanlari hazirlaniyor..." />
         ) : (
           <>
             <input value={value.slug} onChange={(event) => onChange("slug", event.target.value)} placeholder="slug" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            <input value={value.sortOrder} onChange={(event) => onChange("sortOrder", event.target.value)} placeholder="sort order" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={value.isActive} onChange={(event) => onChange("isActive", event.target.checked)} />Active</label>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={value.isFeatured} onChange={(event) => onChange("isFeatured", event.target.checked)} />Featured</label>
-            <input value={value.trName} onChange={(event) => onChange("trName", event.target.value)} placeholder="TR name" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            <textarea value={value.trDescription} onChange={(event) => onChange("trDescription", event.target.value)} rows={2} placeholder="TR description" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            <input value={value.enName} onChange={(event) => onChange("enName", event.target.value)} placeholder="EN name" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            <textarea value={value.enDescription} onChange={(event) => onChange("enDescription", event.target.value)} rows={2} placeholder="EN description" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+            <input value={value.sortOrder} onChange={(event) => onChange("sortOrder", event.target.value)} placeholder="siralama" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={value.isActive} onChange={(event) => onChange("isActive", event.target.checked)} />Aktif</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={value.isFeatured} onChange={(event) => onChange("isFeatured", event.target.checked)} />One cikan</label>
+            <input value={value.trName} onChange={(event) => onChange("trName", event.target.value)} placeholder="TR ad" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+            <textarea value={value.trDescription} onChange={(event) => onChange("trDescription", event.target.value)} rows={2} placeholder="TR aciklama" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+            <input value={value.enName} onChange={(event) => onChange("enName", event.target.value)} placeholder="EN ad" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+            <textarea value={value.enDescription} onChange={(event) => onChange("enDescription", event.target.value)} rows={2} placeholder="EN aciklama" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
             {(message || error) && <p className={`rounded-md px-3 py-2 text-sm ${error ? "border border-destructive/20 bg-destructive/5 text-destructive" : "border border-primary/20 bg-primary/10 text-primary"}`}>{error || message}</p>}
-            <button type="button" onClick={onSave} disabled={saving} className="w-full rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70">{saving ? "Saving..." : "Save category"}</button>
+            <button type="button" onClick={onSave} disabled={saving} className="w-full rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-70">{saving ? "Kaydediliyor..." : "Kategoriyi kaydet"}</button>
           </>
         )}
       </div>

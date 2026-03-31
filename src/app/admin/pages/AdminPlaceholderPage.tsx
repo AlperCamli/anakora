@@ -9,8 +9,8 @@ export function AdminPlaceholderPage({
 }) {
   return (
     <AdminStateCard
-      title={`${title} module is staged`}
-      message={`${description} This placeholder route is wired and protected, ready for implementation in the next sprint.`}
+      title={`${title} modulu hazirlandi`}
+      message={`${description} Bu gecici rota baglandi ve korumaya alindi; bir sonraki sprintte gelistirmeye hazir.`}
     />
   );
 }

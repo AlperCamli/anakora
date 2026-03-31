@@ -20,49 +20,49 @@ interface AdminNavItem {
 }
 
 const PRIMARY_NAV: AdminNavItem[] = [
-  { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
-  { label: "Programs", path: "/admin/programs", icon: BookOpen },
-  { label: "Guides", path: "/admin/guides", icon: Users },
-  { label: "Leads", path: "/admin/leads", icon: MessageCircle },
+  { label: "Panel", path: "/admin", icon: LayoutDashboard },
+  { label: "Programlar", path: "/admin/programs", icon: BookOpen },
+  { label: "Rehberler", path: "/admin/guides", icon: Users },
+  { label: "Leadler", path: "/admin/leads", icon: MessageCircle },
 ];
 
 const SECONDARY_NAV: AdminNavItem[] = [
-  { label: "Testimonials", path: "/admin/testimonials", icon: FileText },
-  { label: "Journal", path: "/admin/journal", icon: BookOpen },
-  { label: "Homepage", path: "/admin/homepage", icon: Home },
-  { label: "Site Settings", path: "/admin/site-settings", icon: Settings },
-  { label: "Media", path: "/admin/media", icon: Image },
+  { label: "Yorumlar", path: "/admin/testimonials", icon: FileText },
+  { label: "Jurnal", path: "/admin/journal", icon: BookOpen },
+  { label: "Anasayfa", path: "/admin/homepage", icon: Home },
+  { label: "Site Ayarlari", path: "/admin/site-settings", icon: Settings },
+  { label: "Medya", path: "/admin/media", icon: Image },
 ];
 
 function resolveTitle(pathname: string): string {
   if (pathname === "/admin") {
-    return "Dashboard";
+    return "Panel";
   }
   if (pathname.startsWith("/admin/programs")) {
-    return "Programs";
+    return "Programlar";
   }
   if (pathname.startsWith("/admin/guides")) {
-    return "Guides";
+    return "Rehberler";
   }
   if (pathname.startsWith("/admin/leads")) {
-    return "Leads";
+    return "Leadler";
   }
   if (pathname.startsWith("/admin/testimonials")) {
-    return "Testimonials";
+    return "Yorumlar";
   }
   if (pathname.startsWith("/admin/journal")) {
-    return "Journal";
+    return "Jurnal";
   }
   if (pathname.startsWith("/admin/homepage")) {
-    return "Homepage";
+    return "Anasayfa";
   }
   if (pathname.startsWith("/admin/site-settings")) {
-    return "Site Settings";
+    return "Site Ayarlari";
   }
   if (pathname.startsWith("/admin/media")) {
-    return "Media";
+    return "Medya";
   }
-  return "Admin";
+  return "Yonetim";
 }
 
 function NavSection({
@@ -126,13 +126,13 @@ export function AdminShell() {
               <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 ANAKORA
               </p>
-              <h1 className="text-xl font-semibold">Admin</h1>
+              <h1 className="text-xl font-semibold">Yonetim</h1>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-            <NavSection title="Editorial" items={visiblePrimaryNav} />
-            <NavSection title="Operations" items={visibleSecondaryNav} />
+            <NavSection title="Icerik" items={visiblePrimaryNav} />
+            <NavSection title="Operasyon" items={visibleSecondaryNav} />
           </div>
         </aside>
 
@@ -141,7 +141,7 @@ export function AdminShell() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                  Internal Dashboard
+                  Ic Yonetim
                 </p>
                 <h2 className="text-2xl font-medium">{resolveTitle(location.pathname)}</h2>
               </div>
@@ -150,7 +150,7 @@ export function AdminShell() {
                 <div className="hidden text-right sm:block">
                   <p className="text-sm font-medium">{profile?.fullName ?? profile?.email}</p>
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {profile?.role ?? "admin"}
+                    {profile?.role ?? "yonetici"}
                   </p>
                 </div>
                 <button
@@ -158,7 +158,7 @@ export function AdminShell() {
                   onClick={() => void signOut()}
                   className="rounded-md border border-border px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
                 >
-                  Sign out
+                  Cikis yap
                 </button>
               </div>
             </div>
@@ -169,8 +169,8 @@ export function AdminShell() {
               <Outlet />
             ) : (
               <AdminStateCard
-                title="Access restricted"
-                message={`Your role (${role ?? "unknown"}) does not allow this module${requiredCapability ? ` (${requiredCapability})` : ""}.`}
+                title="Erisim kisitli"
+                message={`Rolunuz (${role ?? "bilinmiyor"}) bu modul icin yetkili degil${requiredCapability ? ` (${requiredCapability})` : ""}.`}
                 tone="error"
               />
             )}

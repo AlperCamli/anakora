@@ -18,7 +18,7 @@ interface ValidationResult {
 export interface SubmitLeadInput {
   source: LeadSource;
   locale: Locale;
-  email: string;
+  email?: string;
   fullName?: string;
   phone?: string;
   message?: string;
@@ -47,15 +47,27 @@ function trimOrUndefined(value?: string): string | undefined {
 
 function validateLeadInput(input: SubmitLeadInput): ValidationResult {
   const fieldErrors: Record<string, string> = {};
-  const email = input.email.trim();
+  const email = trimOrUndefined(input.email);
+  const phone = trimOrUndefined(input.phone);
+  const isNewsletterFlow =
+    input.source === "newsletter" || input.source === "journal_newsletter";
+  const isGeneralContact = input.source === "general_contact";
 
-  if (!email) {
+  if (isGeneralContact) {
+    if (!email && !phone) {
+      const message = "Iletisim icin e-posta veya telefon alanindan birini doldurun.";
+      fieldErrors.email = message;
+      fieldErrors.phone = message;
+    } else if (email && !isValidEmail(email)) {
+      fieldErrors.email = "Gecerli bir e-posta adresi girin.";
+    }
+  } else if (!email) {
     fieldErrors.email = "E-posta alani zorunludur.";
   } else if (!isValidEmail(email)) {
     fieldErrors.email = "Gecerli bir e-posta adresi girin.";
   }
 
-  if (input.source !== "newsletter" && input.source !== "journal_newsletter") {
+  if (!isNewsletterFlow) {
     const name = input.fullName?.trim();
     if (!name) {
       fieldErrors.fullName = "Isim soyisim alani zorunludur.";
@@ -93,13 +105,14 @@ export async function submitLeadSubmission(
   }
 
   const supabase = getSupabaseBrowserClient();
+  const normalizedEmail = trimOrUndefined(input.email);
   const payload = {
     source: input.source,
     status: "new",
     locale: input.locale,
     program_id: input.programId ?? null,
     full_name: trimOrUndefined(input.fullName) ?? null,
-    email: input.email.trim(),
+    email: normalizedEmail ?? null,
     phone: trimOrUndefined(input.phone) ?? null,
     message: trimOrUndefined(input.message) ?? null,
     metadata: {

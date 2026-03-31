@@ -29,7 +29,7 @@ This document describes the implemented Programs CMS for ANAKORA admin.
 - external booking URL (required when mode is `external`)
 - location name, city, country code
 - featured state
-- cover image URL reference
+- cover image upload/select with preview (stored as URL in `cover_image_url`)
 
 ### Type/scope and operations fields
 - start/end datetime

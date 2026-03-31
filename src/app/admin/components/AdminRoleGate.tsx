@@ -5,10 +5,10 @@ import { hasCapability } from "../lib/permissions";
 import { AdminStateCard } from "./AdminStateCard";
 
 const CAPABILITY_LABEL: Record<AdminCapability, string> = {
-  manage_content: "content management",
-  manage_operations: "operations workflows",
-  manage_settings: "site settings",
-  manage_media: "media library",
+  manage_content: "icerik yonetimi",
+  manage_operations: "operasyon akisleri",
+  manage_settings: "site ayarlari",
+  manage_media: "medya kutuphanesi",
 };
 
 export function AdminRoleGate({
@@ -27,8 +27,8 @@ export function AdminRoleGate({
 
   return (
     <AdminStateCard
-      title="Permission required"
-      message={`Your role does not currently allow ${CAPABILITY_LABEL[capability]}. Contact an owner if this access should be enabled.`}
+      title="Yetki gerekli"
+      message={`Rolunuz su an ${CAPABILITY_LABEL[capability]} erisimine izin vermiyor. Bu erisim acilacaksa owner rolundeki kullanici ile iletisime gecin.`}
       tone="error"
     />
   );

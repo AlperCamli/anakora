@@ -35,13 +35,13 @@ function validateLinkArray(
 
   for (const item of value) {
     if (!item || typeof item !== "object" || Array.isArray(item)) {
-      throw new Error(`${fieldLabel} should contain only object items.`);
+      throw new Error(`${fieldLabel} alani sadece nesne ogeleri icermelidir.`);
     }
     const obj = item as Record<string, unknown>;
     const label = typeof obj.label === "string" ? obj.label.trim() : "";
     const href = typeof obj.href === "string" ? obj.href.trim() : "";
     if (!label || !href) {
-      throw new Error(`${fieldLabel} items require both label and href.`);
+      throw new Error(`${fieldLabel} ogeleri hem label hem href icermelidir.`);
     }
     parsed.push({ label, href });
   }
@@ -109,18 +109,18 @@ export async function getSiteSettingsEditor(): Promise<SiteSettingsEditorValue> 
 function sanitizeLocaleRow(value: SiteSettingsLocaleValue, adminUserId: string) {
   const contactEmail = value.contactEmail.trim();
   if (contactEmail && !isValidEmail(contactEmail)) {
-    throw new Error(`${value.locale.toUpperCase()} contact email is invalid.`);
+    throw new Error(`${value.locale.toUpperCase()} iletisim e-postasi gecersiz.`);
   }
 
   const reservationEmail = value.reservationNotificationEmail.trim();
   if (reservationEmail && !isValidEmail(reservationEmail)) {
     throw new Error(
-      `${value.locale.toUpperCase()} reservation notification email is invalid.`,
+      `${value.locale.toUpperCase()} rezervasyon bildirim e-postasi gecersiz.`,
     );
   }
 
   if (!value.siteName.trim()) {
-    throw new Error(`${value.locale.toUpperCase()} site name is required.`);
+    throw new Error(`${value.locale.toUpperCase()} site adi zorunludur.`);
   }
 
   const headerNavigation = validateLinkArray(

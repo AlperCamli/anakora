@@ -21,7 +21,7 @@ export function parseInteger(value: string, fieldLabel: string): number | null {
 
   const parsed = Number(trimmed);
   if (!Number.isInteger(parsed)) {
-    throw new Error(`${fieldLabel} must be an integer.`);
+    throw new Error(`${fieldLabel} tam sayi olmalidir.`);
   }
 
   return parsed;
@@ -42,13 +42,13 @@ export function parseJsonObject(
   } catch (error) {
     throw new Error(
       error instanceof Error
-        ? `${fieldLabel} is invalid JSON: ${error.message}`
-        : `${fieldLabel} is invalid JSON.`,
+        ? `${fieldLabel} gecersiz JSON: ${error.message}`
+        : `${fieldLabel} gecersiz JSON.`,
     );
   }
 
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error(`${fieldLabel} must be a JSON object.`);
+    throw new Error(`${fieldLabel} bir JSON nesnesi olmalidir.`);
   }
 
   return parsed as Record<string, unknown>;
@@ -66,13 +66,13 @@ export function parseJsonArray(text: string, fieldLabel: string): unknown[] {
   } catch (error) {
     throw new Error(
       error instanceof Error
-        ? `${fieldLabel} is invalid JSON: ${error.message}`
-        : `${fieldLabel} is invalid JSON.`,
+        ? `${fieldLabel} gecersiz JSON: ${error.message}`
+        : `${fieldLabel} gecersiz JSON.`,
     );
   }
 
   if (!Array.isArray(parsed)) {
-    throw new Error(`${fieldLabel} must be a JSON array.`);
+    throw new Error(`${fieldLabel} bir JSON dizisi olmalidir.`);
   }
 
   return parsed;
@@ -113,7 +113,7 @@ export function toIsoFromDateTimeLocal(value: string, fieldLabel: string): strin
 
   const parsed = new Date(trimmed);
   if (Number.isNaN(parsed.getTime())) {
-    throw new Error(`${fieldLabel} has an invalid date/time value.`);
+    throw new Error(`${fieldLabel} gecersiz tarih/saat degeri iceriyor.`);
   }
   return parsed.toISOString();
 }

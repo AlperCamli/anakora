@@ -273,7 +273,7 @@ export async function getTestimonialEditorById(
     throw new Error(assignmentError.message);
   }
   if (!testimonialRow) {
-    throw new Error("Testimonial not found.");
+    throw new Error("Yorum bulunamadi.");
   }
 
   const translationMap = mapTranslationRows(
@@ -313,24 +313,24 @@ export async function saveTestimonial(
 
   const slug = normalizeSlug(values.slug || values.tr.authorName || values.en.authorName);
   if (!slug) {
-    throw new Error("Slug is required.");
+    throw new Error("Slug alani zorunludur.");
   }
   if (!values.tr.authorName.trim() || !values.en.authorName.trim()) {
-    throw new Error("Both TR and EN author names are required.");
+    throw new Error("TR ve EN yazar adlari zorunludur.");
   }
   if (!values.tr.quote.trim() || !values.en.quote.trim()) {
-    throw new Error("Both TR and EN quotes are required.");
+    throw new Error("TR ve EN yorum alanlari zorunludur.");
   }
 
-  const rating = parseInteger(values.rating, "Rating") ?? 5;
+  const rating = parseInteger(values.rating, "Puan") ?? 5;
   if (rating < 1 || rating > 5) {
-    throw new Error("Rating must be between 1 and 5.");
+    throw new Error("Puan 1 ile 5 arasinda olmalidir.");
   }
 
-  const sortOrder = parseInteger(values.sortOrder, "Sort order") ?? 0;
+  const sortOrder = parseInteger(values.sortOrder, "Siralama") ?? 0;
   const testimonialDate = trimOrNull(values.testimonialDate);
   if (testimonialDate && !/^\d{4}-\d{2}-\d{2}$/.test(testimonialDate)) {
-    throw new Error("Testimonial date must use YYYY-MM-DD format.");
+    throw new Error("Yorum tarihi YYYY-MM-DD formatinda olmalidir.");
   }
 
   const primaryProgramId = trimOrNull(values.primaryProgramId);

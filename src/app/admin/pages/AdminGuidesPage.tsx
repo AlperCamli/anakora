@@ -9,7 +9,7 @@ function formatDate(value: string): string {
   if (Number.isNaN(date.getTime())) {
     return "-";
   }
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -43,7 +43,7 @@ export function AdminGuidesPage() {
         if (!mounted) {
           return;
         }
-        setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+        setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
       } finally {
         if (mounted) {
           setLoading(false);
@@ -86,15 +86,15 @@ export function AdminGuidesPage() {
   if (loading) {
     return (
       <AdminStateCard
-        title="Loading guides"
-        message="Fetching guide profiles and linked usage stats..."
+        title="Rehberler yukleniyor"
+        message="Rehber profilleri ve bagli kullanim istatistikleri getiriliyor..."
       />
     );
   }
 
   if (error) {
     return (
-      <AdminStateCard title="Guides unavailable" message={error} tone="error" />
+      <AdminStateCard title="Rehberler kullanilamiyor" message={error} tone="error" />
     );
   }
 
@@ -102,16 +102,16 @@ export function AdminGuidesPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h3 className="text-lg font-medium">Guides</h3>
+          <h3 className="text-lg font-medium">Rehberler</h3>
           <p className="text-sm text-muted-foreground">
-            {filtered.length} results shown from {items.length} guide profiles.
+            Toplam {items.length} rehber profilinden {filtered.length} sonuc.
           </p>
         </div>
         <Link
           to="/admin/guides/new"
           className="inline-flex rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
         >
-          New guide
+          Yeni rehber
         </Link>
       </div>
 
@@ -119,7 +119,7 @@ export function AdminGuidesPage() {
         <input
           value={searchText}
           onChange={(event) => setSearchText(event.target.value)}
-          placeholder="Search slug/name/email"
+          placeholder="Slug/ad/e-posta ara"
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
 
@@ -130,9 +130,9 @@ export function AdminGuidesPage() {
           }
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
         >
-          <option value="all">All profiles</option>
-          <option value="active">Active only</option>
-          <option value="inactive">Inactive only</option>
+          <option value="all">Tum profiller</option>
+          <option value="active">Sadece aktif</option>
+          <option value="inactive">Sadece pasif</option>
         </select>
 
         <label className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm">
@@ -141,7 +141,7 @@ export function AdminGuidesPage() {
             checked={featuredOnly}
             onChange={(event) => setFeaturedOnly(event.target.checked)}
           />
-          Featured only
+          Sadece one cikanlar
         </label>
       </div>
 
@@ -150,10 +150,10 @@ export function AdminGuidesPage() {
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Guide</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Linked programs</th>
-              <th className="px-4 py-3">Updated</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">Durum</th>
+              <th className="px-4 py-3">Bagli programlar</th>
+              <th className="px-4 py-3">Guncelleme</th>
+              <th className="px-4 py-3">Islemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -175,10 +175,10 @@ export function AdminGuidesPage() {
                         : "bg-destructive/10 text-destructive"
                     }`}
                   >
-                    {item.isActive ? "active" : "inactive"}
+                    {item.isActive ? "aktif" : "pasif"}
                   </p>
                   {item.isFeatured && (
-                    <p className="mt-1 text-xs text-terracotta">featured</p>
+                    <p className="mt-1 text-xs text-terracotta">one cikan</p>
                   )}
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">
@@ -192,7 +192,7 @@ export function AdminGuidesPage() {
                     to={`/admin/guides/${item.id}`}
                     className="text-primary hover:underline"
                   >
-                    Edit
+                    Duzenle
                   </Link>
                 </td>
               </tr>
@@ -200,7 +200,7 @@ export function AdminGuidesPage() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  No guides match current filters.
+                  Secili filtrelere uygun rehber bulunamadi.
                 </td>
               </tr>
             )}

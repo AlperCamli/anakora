@@ -10,6 +10,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    allowedHosts: [
+      'tactile-unloudly-tiffani.ngrok-free.dev'
+    ]
+  },
   resolve: {
     alias: {
       // Alias @ to the src directory

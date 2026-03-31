@@ -50,24 +50,24 @@ export function AdminLoginPage() {
     <div className="min-h-screen bg-muted/20 px-4 py-12">
       <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
         <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          ANAKORA Admin
+          ANAKORA Yonetim
         </p>
-        <h1 className="mt-2 text-3xl font-semibold">Sign in</h1>
+        <h1 className="mt-2 text-3xl font-semibold">Giris yap</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Continue with your admin account to access editorial and operations tools.
+          Icerik ve operasyon araclarina erismek icin admin hesabi ile devam edin.
         </p>
 
         {isLoading ? (
           <div className="mt-6">
             <AdminStateCard
-              title="Checking session"
-              message="We are preparing your admin workspace..."
+              title="Oturum kontrol ediliyor"
+              message="Admin calisma alani hazirlaniyor..."
             />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <label className="block space-y-1">
-              <span className="text-sm text-foreground/80">Email</span>
+              <span className="text-sm text-foreground/80">E-posta</span>
               <input
                 type="email"
                 required
@@ -79,7 +79,7 @@ export function AdminLoginPage() {
             </label>
 
             <label className="block space-y-1">
-              <span className="text-sm text-foreground/80">Password</span>
+              <span className="text-sm text-foreground/80">Sifre</span>
               <input
                 type="password"
                 required
@@ -98,15 +98,15 @@ export function AdminLoginPage() {
             {user && !isAdmin && !isLoading && (
               <div className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-3 text-sm text-destructive">
                 <p>
-                  This user is signed in but is not assigned as an active admin in
-                  admin_profiles.
+                  Bu kullanici giris yapti ancak admin_profiles tablosunda aktif admin
+                  olarak atanmis degil.
                 </p>
                 <button
                   type="button"
                   onClick={() => void signOut()}
                   className="mt-3 rounded-md border border-destructive/30 px-3 py-1.5 text-xs uppercase tracking-wide"
                 >
-                  Sign out
+                  Cikis yap
                 </button>
               </div>
             )}
@@ -116,7 +116,7 @@ export function AdminLoginPage() {
               disabled={submitting}
               className="w-full rounded-md bg-primary px-4 py-2.5 text-sm text-primary-foreground transition-opacity disabled:opacity-70"
             >
-              {submitting ? "Signing in..." : "Sign in"}
+              {submitting ? "Giris yapiliyor..." : "Giris yap"}
             </button>
           </form>
         )}

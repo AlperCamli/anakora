@@ -33,12 +33,12 @@ function parseJsonArray(text: string): unknown[] {
     if (Array.isArray(parsed)) {
       return parsed;
     }
-    throw new Error("JSON value must be an array");
+    throw new Error("JSON degeri bir dizi olmalidir.");
   } catch (error) {
     throw new Error(
       error instanceof Error
-        ? `Invalid itinerary JSON: ${error.message}`
-        : "Invalid itinerary JSON",
+        ? `Itinerary JSON gecersiz: ${error.message}`
+        : "Itinerary JSON gecersiz",
     );
   }
 }
@@ -92,7 +92,7 @@ function toIsoFromDateTimeLocal(value: string): string | null {
 
   const date = new Date(trimmed);
   if (Number.isNaN(date.getTime())) {
-    throw new Error("Invalid date value.");
+    throw new Error("Gecersiz tarih degeri.");
   }
 
   return date.toISOString();
@@ -121,7 +121,7 @@ function parseNumber(value: string): number | null {
 
   const parsed = Number(trimmed);
   if (Number.isNaN(parsed)) {
-    throw new Error(`Invalid number: ${value}`);
+    throw new Error(`Gecersiz sayi: ${value}`);
   }
 
   return parsed;
@@ -133,7 +133,7 @@ function parseInteger(value: string): number | null {
     return null;
   }
   if (!Number.isInteger(parsed)) {
-    throw new Error(`Expected integer value: ${value}`);
+    throw new Error(`Tam sayi bekleniyor: ${value}`);
   }
   return parsed;
 }
@@ -368,7 +368,7 @@ export async function getProgramEditorById(
   }
 
   if (!programData) {
-    throw new Error("Program not found.");
+    throw new Error("Program bulunamadi.");
   }
 
   const [translationsResult, assignmentsResult, faqsResult] = await Promise.all([
@@ -523,19 +523,19 @@ export async function saveProgram(
 
   const slug = normalizeSlug(values.slug || values.tr.title || values.en.title);
   if (!slug) {
-    throw new Error("Program slug is required.");
+    throw new Error("Program slug alani zorunludur.");
   }
   if (!values.startsAt.trim()) {
-    throw new Error("Program start date is required.");
+    throw new Error("Program baslangic tarihi zorunludur.");
   }
   if (!values.locationName.trim()) {
-    throw new Error("Location name is required.");
+    throw new Error("Lokasyon adi zorunludur.");
   }
   if (!values.tr.title.trim() || !values.en.title.trim()) {
-    throw new Error("Both TR and EN titles are required.");
+    throw new Error("TR ve EN baslik alanlari zorunludur.");
   }
   if (values.bookingMode === "external" && !values.externalBookingUrl.trim()) {
-    throw new Error("External booking URL is required for external booking mode.");
+    throw new Error("Harici rezervasyon tipi icin harici rezervasyon URL alani zorunludur.");
   }
 
   const startsAt = toIsoFromDateTimeLocal(values.startsAt);

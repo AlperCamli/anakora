@@ -4,24 +4,42 @@ import { listLeads } from "../data/leads";
 import type { LeadListItem, LeadSource, LeadStatus } from "../types";
 import { AdminStateCard } from "../components/AdminStateCard";
 
+const SOURCE_LABELS: Record<LeadSource, string> = {
+  newsletter: "E-bulten",
+  program_booking: "Program basvurusu",
+  journal_newsletter: "Jurnal e-bulten",
+  general_contact: "Genel iletisim",
+  waitlist: "Bekleme listesi",
+};
+
 const SOURCE_OPTIONS: Array<{ label: string; value: LeadSource | "all" }> = [
-  { label: "All sources", value: "all" },
-  { label: "Newsletter", value: "newsletter" },
-  { label: "Program booking", value: "program_booking" },
-  { label: "Journal newsletter", value: "journal_newsletter" },
-  { label: "General contact", value: "general_contact" },
-  { label: "Waitlist", value: "waitlist" },
+  { label: "Tum kaynaklar", value: "all" },
+  { label: SOURCE_LABELS.newsletter, value: "newsletter" },
+  { label: SOURCE_LABELS.program_booking, value: "program_booking" },
+  { label: SOURCE_LABELS.journal_newsletter, value: "journal_newsletter" },
+  { label: SOURCE_LABELS.general_contact, value: "general_contact" },
+  { label: SOURCE_LABELS.waitlist, value: "waitlist" },
 ];
 
+const STATUS_LABELS: Record<LeadStatus, string> = {
+  new: "Yeni",
+  reviewed: "Incelendi",
+  contacted: "Iletisime gecildi",
+  qualified: "Nitelikli",
+  converted: "Donustu",
+  archived: "Arsiv",
+  spam: "Spam",
+};
+
 const STATUS_OPTIONS: Array<{ label: string; value: LeadStatus | "all" }> = [
-  { label: "All statuses", value: "all" },
-  { label: "New", value: "new" },
-  { label: "Reviewed", value: "reviewed" },
-  { label: "Contacted", value: "contacted" },
-  { label: "Qualified", value: "qualified" },
-  { label: "Converted", value: "converted" },
-  { label: "Archived", value: "archived" },
-  { label: "Spam", value: "spam" },
+  { label: "Tum durumlar", value: "all" },
+  { label: STATUS_LABELS.new, value: "new" },
+  { label: STATUS_LABELS.reviewed, value: "reviewed" },
+  { label: STATUS_LABELS.contacted, value: "contacted" },
+  { label: STATUS_LABELS.qualified, value: "qualified" },
+  { label: STATUS_LABELS.converted, value: "converted" },
+  { label: STATUS_LABELS.archived, value: "archived" },
+  { label: STATUS_LABELS.spam, value: "spam" },
 ];
 
 function formatDate(value: string): string {
@@ -29,7 +47,7 @@ function formatDate(value: string): string {
   if (Number.isNaN(date.getTime())) {
     return "-";
   }
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -49,6 +67,10 @@ function statusColor(status: LeadStatus): string {
     return "bg-destructive/10 text-destructive";
   }
   return "bg-muted text-muted-foreground";
+}
+
+function displayLeadName(item: LeadListItem): string {
+  return item.fullName || item.email || item.phone || "Isimsiz lead";
 }
 
 export function AdminLeadsPage() {
@@ -83,7 +105,7 @@ export function AdminLeadsPage() {
         if (!mounted) {
           return;
         }
-        setError(fetchError instanceof Error ? fetchError.message : "Unknown error");
+        setError(fetchError instanceof Error ? fetchError.message : "Bilinmeyen hata");
       } finally {
         if (mounted) {
           setLoading(false);
@@ -118,22 +140,22 @@ export function AdminLeadsPage() {
   if (loading) {
     return (
       <AdminStateCard
-        title="Loading leads"
-        message="Fetching submissions and pipeline statuses..."
+        title="Leadler yukleniyor"
+        message="Basvurular ve pipeline durumlari getiriliyor..."
       />
     );
   }
 
   if (error) {
-    return <AdminStateCard title="Leads unavailable" message={error} tone="error" />;
+    return <AdminStateCard title="Lead modulu kullanilamiyor" message={error} tone="error" />;
   }
 
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <h3 className="text-lg font-medium">Leads inbox</h3>
+        <h3 className="text-lg font-medium">Lead kutusu</h3>
         <p className="text-sm text-muted-foreground">
-          {items.length} submissions in current view.
+          Bu gorunumde {items.length} basvuru var.
         </p>
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           {STATUS_OPTIONS.filter((option) => option.value !== "all").map((option) => (
@@ -175,18 +197,18 @@ export function AdminLeadsPage() {
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Lead</th>
-              <th className="px-4 py-3">Source</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Submitted</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">Kaynak</th>
+              <th className="px-4 py-3">Durum</th>
+              <th className="px-4 py-3">Gonderim</th>
+              <th className="px-4 py-3">Islemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {items.map((item) => (
               <tr key={item.id}>
                 <td className="px-4 py-3">
-                  <p className="font-medium">{item.fullName || item.email}</p>
-                  <p className="text-xs text-muted-foreground">{item.email}</p>
+                  <p className="font-medium">{displayLeadName(item)}</p>
+                  {item.email && <p className="text-xs text-muted-foreground">{item.email}</p>}
                   {item.phone && <p className="text-xs text-muted-foreground">{item.phone}</p>}
                   {item.programSlug && (
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -195,11 +217,11 @@ export function AdminLeadsPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
-                  {item.source}
+                  {SOURCE_LABELS[item.source]}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full px-2 py-1 text-xs ${statusColor(item.status)}`}>
-                    {item.status}
+                    {STATUS_LABELS[item.status]}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">
@@ -207,7 +229,7 @@ export function AdminLeadsPage() {
                 </td>
                 <td className="px-4 py-3 text-xs">
                   <Link to={`/admin/leads/${item.id}`} className="text-primary hover:underline">
-                    Open
+                    Ac
                   </Link>
                 </td>
               </tr>
@@ -215,7 +237,7 @@ export function AdminLeadsPage() {
             {items.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  No leads found for selected filters.
+                  Secili filtreler icin lead bulunamadi.
                 </td>
               </tr>
             )}

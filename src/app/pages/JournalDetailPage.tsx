@@ -1,17 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { ArrowLeft, Clock } from "lucide-react";
 import { motion } from "motion/react";
 import { getJournalDetailBySlug, type JournalPostDTO } from "../../server/data";
 import { useSiteData } from "../context/SiteDataContext";
 import { formatReadTime } from "../lib/formatters";
-
-function toParagraphs(content: string): string[] {
-  return content
-    .split(/\n\s*\n/g)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-}
+import { MarkdownContent } from "../components/MarkdownContent";
 
 export function JournalDetailPage() {
   const { slug } = useParams();
@@ -66,10 +60,6 @@ export function JournalDetailPage() {
       isMounted = false;
     };
   }, [locale, slug]);
-
-  const paragraphs = useMemo(() => toParagraphs(post?.contentMarkdown ?? ""), [
-    post?.contentMarkdown,
-  ]);
 
   if (loading) {
     return (
@@ -149,10 +139,11 @@ export function JournalDetailPage() {
           {post.excerpt && (
             <p className="text-lg text-muted-foreground mb-8">{post.excerpt}</p>
           )}
-          <article className="prose prose-lg max-w-none text-foreground/90 leading-relaxed">
-            {paragraphs.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
+          <article>
+            <MarkdownContent
+              content={post.contentMarkdown}
+              className="prose prose-lg max-w-none text-foreground/90 leading-relaxed"
+            />
           </article>
         </div>
       </section>

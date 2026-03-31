@@ -11,8 +11,8 @@ export function AdminProtectedLayout() {
     return (
       <div className="mx-auto flex min-h-screen w-full max-w-[820px] items-center px-4">
         <AdminStateCard
-          title="Loading admin session"
-          message="Verifying account access and role permissions..."
+          title="Admin oturumu yukleniyor"
+          message="Hesap erisimi ve rol izinleri kontrol ediliyor..."
         />
       </div>
     );
@@ -28,19 +28,19 @@ export function AdminProtectedLayout() {
       <div className="mx-auto flex min-h-screen w-full max-w-[820px] items-center px-4">
         <div className="w-full space-y-4">
           <AdminStateCard
-            title="Access not granted"
-            message="This account is authenticated but does not have an active admin profile in admin_profiles."
+            title="Erisim yetkisi yok"
+            message="Bu hesap giris yapti ancak admin_profiles tablosunda aktif admin profili bulunmuyor."
             tone="error"
           />
           {error && (
-            <p className="text-sm text-destructive">Auth error: {error}</p>
+            <p className="text-sm text-destructive">Kimlik dogrulama hatasi: {error}</p>
           )}
           <button
             type="button"
             onClick={() => void signOut()}
             className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
           >
-            Sign out
+            Cikis yap
           </button>
         </div>
       </div>

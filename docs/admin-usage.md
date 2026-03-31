@@ -4,6 +4,7 @@
 - Login route: `/admin/login`.
 - Roles come from `public.admin_profiles.role`.
 - Role-aware access is enforced in the shell and module pages.
+- Admin UI language is Turkish (TR/EN content entry fields remain available).
 
 ### Role capability map
 - `owner`: all modules.
@@ -32,9 +33,10 @@
 - Supports:
   - post list + create + edit
   - TR/EN content
+  - TR/EN markdown live preview in editor
   - publish flow (`draft` / `published` / `archived`)
   - category assignment
-  - cover image URL
+  - cover image upload/select flow with preview
 - Category panel in same route supports create/edit for journal taxonomy.
 
 ### Homepage
@@ -61,7 +63,8 @@
 - Supports:
   - Supabase Storage uploads
   - bucket visibility switch (`public` / `private`)
-  - prefix browsing
+  - module-based browsing (`journal`, `program`, `guide`, `testimonials`, `homepage`)
+  - recursive listing to include legacy deep-path assets
   - object deletion
   - URL/reference output for content fields
 
