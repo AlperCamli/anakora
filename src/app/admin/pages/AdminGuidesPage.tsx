@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
+import { AdminImagePreview } from "../components/AdminImagePreview";
 import { listGuides } from "../data/guides";
 import type { GuideListItem } from "../types";
 import { AdminStateCard } from "../components/AdminStateCard";
@@ -149,7 +150,8 @@ export function AdminGuidesPage() {
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
             <tr>
-              <th className="px-4 py-3">Guide</th>
+              <th className="px-4 py-3">Avatar</th>
+              <th className="px-4 py-3">Rehber</th>
               <th className="px-4 py-3">Durum</th>
               <th className="px-4 py-3">Bagli programlar</th>
               <th className="px-4 py-3">Guncelleme</th>
@@ -159,6 +161,15 @@ export function AdminGuidesPage() {
           <tbody className="divide-y divide-border">
             {filtered.map((item) => (
               <tr key={item.id}>
+                <td className="px-4 py-3">
+                  <AdminImagePreview
+                    src={item.avatarUrl}
+                    alt={`${item.trName || item.enName || item.slug} avatar`}
+                    className="h-14 w-14 rounded-md border border-border bg-muted/30"
+                    imageClassName="h-full w-full rounded-md object-contain p-1"
+                    fallbackLabel="Yok"
+                  />
+                </td>
                 <td className="px-4 py-3">
                   <p className="font-medium">{item.trName || item.enName || item.slug}</p>
                   <p className="text-xs text-muted-foreground">EN: {item.enName || "-"}</p>
@@ -199,7 +210,7 @@ export function AdminGuidesPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   Secili filtrelere uygun rehber bulunamadi.
                 </td>
               </tr>

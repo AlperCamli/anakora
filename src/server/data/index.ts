@@ -1,5 +1,6 @@
 export type {
   ArchiveDTO,
+  ArchiveProgramDTO,
   GuideDTO,
   HomePageDTO,
   JournalListDTO,
@@ -9,6 +10,7 @@ export type {
   ProgramCardDTO,
   ProgramDetailDTO,
   TestimonialDTO,
+  TrustedOrganizationDTO,
 } from "./types";
 
 export { getLayout } from "./services/layout.service";

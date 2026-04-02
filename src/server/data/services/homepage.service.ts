@@ -1,7 +1,13 @@
 import { getDataClient, type DataClient } from "../client";
-import type { HomepageSectionRow } from "../db-rows";
+import type {
+  HomepageSectionRow,
+  HomepageTrustedOrganizationRow,
+} from "../db-rows";
 import { throwIfQueryError } from "../errors";
-import { mapHomepageSectionDTO } from "../mappers/home.mapper";
+import {
+  mapHomepageSectionDTO,
+  mapTrustedOrganizationDTO,
+} from "../mappers/home.mapper";
 import { DEFAULT_LOCALE, type HomePageDTO, type Locale } from "../types";
 import { getJournalList } from "./journal.service";
 import { getProgramsList } from "./programs.service";
@@ -42,6 +48,24 @@ export async function getHomepage(
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((row) => mapHomepageSectionDTO(row));
 
+  const { data: trustedOrganizationsData, error: trustedOrganizationsError } = await client
+    .from("homepage_trusted_organizations")
+    .select(
+      "id, organization_name, logo_url, logo_alt, website_url, sort_order, is_active",
+    )
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+  throwIfQueryError(
+    "getHomepage:homepage_trusted_organizations",
+    trustedOrganizationsError,
+  );
+  const trustedOrganizationsRows = asRows(
+    trustedOrganizationsData as HomepageTrustedOrganizationRow[],
+  );
+  const trustedOrganizations = trustedOrganizationsRows.map((row) =>
+    mapTrustedOrganizationDTO(row),
+  );
+
   const [featuredPrograms, featuredTestimonials, journalList] =
     await Promise.all([
       getProgramsList(
@@ -59,6 +83,7 @@ export async function getHomepage(
   return {
     locale,
     sections,
+    trustedOrganizations,
     featuredPrograms,
     featuredTestimonials,
     journalPreview: journalList.posts.slice(0, 3),

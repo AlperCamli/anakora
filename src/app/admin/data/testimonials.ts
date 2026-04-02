@@ -172,7 +172,7 @@ export async function listTestimonials(): Promise<TestimonialListItem[]> {
       supabase
         .from("testimonials")
         .select(
-          "id, slug, program_id, guide_id, rating, testimonial_date, is_featured, is_published, sort_order, updated_at",
+          "id, slug, program_id, guide_id, author_image_url, rating, testimonial_date, is_featured, is_published, sort_order, updated_at",
         )
         .order("is_featured", { ascending: false })
         .order("sort_order", { ascending: true })
@@ -221,6 +221,8 @@ export async function listTestimonials(): Promise<TestimonialListItem[]> {
     return {
       id,
       slug: typeof row.slug === "string" ? row.slug : null,
+      authorImageUrl:
+        typeof row.author_image_url === "string" ? row.author_image_url : null,
       primaryProgramId,
       linkedProgramCount: linkedPrograms.size,
       guideId: typeof row.guide_id === "string" ? row.guide_id : null,

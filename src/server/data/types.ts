@@ -94,6 +94,8 @@ export interface ProgramFAQDTO {
 
 export interface ProgramDetailDTO extends ProgramCardDTO {
   storyMarkdown: string | null;
+  archiveRecapMarkdown: string | null;
+  archiveHighlights: string[];
   whoIsItFor: string[];
   itinerary: unknown[];
   includedItems: string[];
@@ -105,9 +107,25 @@ export interface ProgramDetailDTO extends ProgramCardDTO {
   testimonials: TestimonialDTO[];
 }
 
+export interface ArchiveProgramDTO {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string | null;
+  locationName: string;
+  city: string | null;
+  countryCode: string | null;
+  startsAt: string;
+  endsAt: string | null;
+  capacity: number | null;
+  coverImage: MediaDTO | null;
+  recapMarkdown: string | null;
+  highlights: string[];
+}
+
 export interface ArchiveYearDTO {
   year: number;
-  programs: ProgramCardDTO[];
+  programs: ArchiveProgramDTO[];
 }
 
 export interface ArchiveDTO {
@@ -175,9 +193,18 @@ export interface HomePageSectionDTO {
   sortOrder: number;
 }
 
+export interface TrustedOrganizationDTO {
+  id: string;
+  organizationName: string;
+  logo: MediaDTO;
+  websiteUrl: string | null;
+  sortOrder: number;
+}
+
 export interface HomePageDTO {
   locale: Locale;
   sections: HomePageSectionDTO[];
+  trustedOrganizations: TrustedOrganizationDTO[];
   featuredPrograms: ProgramCardDTO[];
   featuredTestimonials: TestimonialDTO[];
   journalPreview: JournalPostPreviewDTO[];

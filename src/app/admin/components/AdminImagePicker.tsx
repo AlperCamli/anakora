@@ -174,7 +174,7 @@ export function AdminImagePicker({
           <img
             src={selectedValue}
             alt="Secili gorsel onizleme"
-            className="h-40 w-full rounded-md object-cover"
+            className="h-56 w-full rounded-md border border-border bg-muted/20 object-contain p-2"
           />
           <p className="break-all text-xs text-muted-foreground">{selectedValue}</p>
         </div>

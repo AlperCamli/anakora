@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
+import { AdminImagePicker } from "../components/AdminImagePicker";
 import { AdminLocaleCompleteness } from "../components/AdminLocaleCompleteness";
 import { AdminRoleGate } from "../components/AdminRoleGate";
 import { AdminStateCard } from "../components/AdminStateCard";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import {
+  createEmptyHomepageTrustedOrganization,
   getHomepageSectionHint,
   listHomepageSections,
+  listHomepageTrustedOrganizations,
+  saveHomepageTrustedOrganizations,
   saveHomepageSections,
 } from "../data/homepage";
-import type { HomepageSectionEditorValue, HomepageSectionKey } from "../types";
+import type {
+  HomepageSectionEditorValue,
+  HomepageSectionKey,
+  HomepageTrustedOrganizationEditorValue,
+} from "../types";
 
 function hasText(value: string) {
   return value.trim().length > 0;
@@ -30,6 +38,15 @@ function sectionLabel(sectionKey: HomepageSectionKey) {
   return SECTION_LABELS[sectionKey];
 }
 
+function normalizeTrustedOrganizationSort(
+  items: HomepageTrustedOrganizationEditorValue[],
+) {
+  return items.map((item, index) => ({
+    ...item,
+    sortOrder: String((index + 1) * 10),
+  }));
+}
+
 export function AdminHomepagePage() {
   return (
     <AdminRoleGate capability="manage_content">
@@ -41,6 +58,12 @@ export function AdminHomepagePage() {
 function HomepageContent() {
   const { user } = useAdminAuth();
   const [sections, setSections] = useState<HomepageSectionEditorValue[]>([]);
+  const [trustedOrganizations, setTrustedOrganizations] = useState<
+    HomepageTrustedOrganizationEditorValue[]
+  >([]);
+  const [draggedTrustedIndex, setDraggedTrustedIndex] = useState<number | null>(
+    null,
+  );
   const [selectedKey, setSelectedKey] = useState<HomepageSectionKey | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,11 +77,15 @@ function HomepageContent() {
       setLoading(true);
       setError(null);
       try {
-        const rows = await listHomepageSections();
+        const [rows, trustedRows] = await Promise.all([
+          listHomepageSections(),
+          listHomepageTrustedOrganizations(),
+        ]);
         if (!mounted) {
           return;
         }
         setSections(rows);
+        setTrustedOrganizations(normalizeTrustedOrganizationSort(trustedRows));
         setSelectedKey(rows[0]?.key ?? null);
       } catch (fetchError) {
         if (mounted) {
@@ -87,6 +114,57 @@ function HomepageContent() {
     setSections((prev) => prev.map((section) => (section.key === key ? updater(section) : section)));
   }
 
+  function addTrustedOrganization() {
+    setTrustedOrganizations((prev) =>
+      normalizeTrustedOrganizationSort([
+        ...prev,
+        createEmptyHomepageTrustedOrganization((prev.length + 1) * 10),
+      ]),
+    );
+  }
+
+  function updateTrustedOrganization(
+    index: number,
+    updater: (
+      current: HomepageTrustedOrganizationEditorValue,
+    ) => HomepageTrustedOrganizationEditorValue,
+  ) {
+    setTrustedOrganizations((prev) =>
+      normalizeTrustedOrganizationSort(
+        prev.map((item, currentIndex) =>
+          currentIndex === index ? updater(item) : item,
+        ),
+      ),
+    );
+  }
+
+  function removeTrustedOrganization(index: number) {
+    setTrustedOrganizations((prev) =>
+      normalizeTrustedOrganizationSort(
+        prev.filter((_, currentIndex) => currentIndex !== index),
+      ),
+    );
+  }
+
+  function moveTrustedOrganization(fromIndex: number, toIndex: number) {
+    setTrustedOrganizations((prev) => {
+      if (
+        fromIndex === toIndex ||
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= prev.length ||
+        toIndex >= prev.length
+      ) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return normalizeTrustedOrganizationSort(next);
+    });
+  }
+
   async function persist() {
     if (!user) {
       setSaveError("Kimligi dogrulanmis kullanici bulunamadi.");
@@ -97,13 +175,22 @@ function HomepageContent() {
     setSaveError(null);
     setSaveMessage(null);
     try {
-      await saveHomepageSections(sections, user.id);
-      const refreshed = await listHomepageSections();
+      await Promise.all([
+        saveHomepageSections(sections, user.id),
+        saveHomepageTrustedOrganizations(trustedOrganizations, user.id),
+      ]);
+      const [refreshed, refreshedTrusted] = await Promise.all([
+        listHomepageSections(),
+        listHomepageTrustedOrganizations(),
+      ]);
       setSections(refreshed);
-      setSaveMessage("Anasayfa bolumleri kaydedildi.");
+      setTrustedOrganizations(normalizeTrustedOrganizationSort(refreshedTrusted));
+      setSaveMessage("Anasayfa bolumleri ve guvenilen kurumlar kaydedildi.");
     } catch (persistError) {
       setSaveError(
-        persistError instanceof Error ? persistError.message : "Anasayfa bolumleri kaydedilemedi.",
+        persistError instanceof Error
+          ? persistError.message
+          : "Anasayfa verisi kaydedilemedi.",
       );
     } finally {
       setSaving(false);
@@ -130,7 +217,7 @@ function HomepageContent() {
           <div>
             <h3 className="text-lg font-medium">Anasayfa bolumleri</h3>
             <p className="text-sm text-muted-foreground">
-              Aktiflik, sira, lokalize metinler, medya ve kontrollu payload JSON yonetimi.
+              Aktiflik, sira, lokalize metinler, medya, payload JSON ve guvenilen kurum logolari.
             </p>
           </div>
           <button
@@ -258,6 +345,25 @@ function HomepageContent() {
                   }))
                 }
               />
+
+              {selectedSection.key === "brand_manifesto" && (
+                <TrustedOrganizationsEditor
+                  items={trustedOrganizations}
+                  draggedIndex={draggedTrustedIndex}
+                  onAdd={addTrustedOrganization}
+                  onUpdate={updateTrustedOrganization}
+                  onRemove={removeTrustedOrganization}
+                  onDragStart={(index) => setDraggedTrustedIndex(index)}
+                  onDragCancel={() => setDraggedTrustedIndex(null)}
+                  onDrop={(targetIndex) => {
+                    if (draggedTrustedIndex === null) {
+                      return;
+                    }
+                    moveTrustedOrganization(draggedTrustedIndex, targetIndex);
+                    setDraggedTrustedIndex(null);
+                  }}
+                />
+              )}
             </div>
           </div>
         ) : (
@@ -316,6 +422,175 @@ function SectionLocaleEditor({
           placeholder="Payload JSON"
           className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs"
         />
+      </div>
+    </div>
+  );
+}
+
+function TrustedOrganizationsEditor({
+  items,
+  draggedIndex,
+  onAdd,
+  onUpdate,
+  onRemove,
+  onDragStart,
+  onDragCancel,
+  onDrop,
+}: {
+  items: HomepageTrustedOrganizationEditorValue[];
+  draggedIndex: number | null;
+  onAdd: () => void;
+  onUpdate: (
+    index: number,
+    updater: (
+      current: HomepageTrustedOrganizationEditorValue,
+    ) => HomepageTrustedOrganizationEditorValue,
+  ) => void;
+  onRemove: (index: number) => void;
+  onDragStart: (index: number) => void;
+  onDragCancel: () => void;
+  onDrop: (targetIndex: number) => void;
+}) {
+  return (
+    <div className="rounded-md border border-border p-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium">Guvenilen kurum logolari</p>
+          <p className="text-xs text-muted-foreground">
+            En az 5 aktif logo oldugunda anasayfada marquee otomatik kayar.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
+        >
+          Kurum ekle
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {items.map((item, index) => (
+          <div
+            key={item.id ?? `trusted-org-${index}`}
+            onDragOver={(event) => {
+              event.preventDefault();
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              onDrop(index);
+            }}
+            className={`rounded-md border p-3 ${
+              draggedIndex === index
+                ? "border-primary bg-primary/5"
+                : "border-border bg-background"
+            }`}
+          >
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  draggable
+                  onDragStart={() => onDragStart(index)}
+                  onDragEnd={onDragCancel}
+                  className="cursor-grab rounded-md border border-border px-2 py-1 text-xs text-muted-foreground active:cursor-grabbing"
+                >
+                  Surukle
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  Sira: {item.sortOrder}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onRemove(index)}
+                className="rounded-md border border-destructive/40 px-2.5 py-1 text-xs text-destructive hover:bg-destructive/5"
+              >
+                Kaldir
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block space-y-1 text-sm">
+                <span>Kurum adi</span>
+                <input
+                  value={item.organizationName}
+                  onChange={(event) =>
+                    onUpdate(index, (current) => ({
+                      ...current,
+                      organizationName: event.target.value,
+                    }))
+                  }
+                  placeholder="Kurum adi"
+                  className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                />
+              </label>
+
+              <AdminImagePicker
+                label="Logo gorseli"
+                module="logo"
+                value={item.logoUrl}
+                onChange={(nextValue) =>
+                  onUpdate(index, (current) => ({
+                    ...current,
+                    logoUrl: nextValue,
+                  }))
+                }
+              />
+
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <label className="block space-y-1 text-sm">
+                  <span>Logo alt metni (opsiyonel)</span>
+                  <input
+                    value={item.logoAlt}
+                    onChange={(event) =>
+                      onUpdate(index, (current) => ({
+                        ...current,
+                        logoAlt: event.target.value,
+                      }))
+                    }
+                    placeholder="Logo aciklama"
+                    className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="block space-y-1 text-sm">
+                  <span>Web sitesi URL (opsiyonel)</span>
+                  <input
+                    value={item.websiteUrl}
+                    onChange={(event) =>
+                      onUpdate(index, (current) => ({
+                        ...current,
+                        websiteUrl: event.target.value,
+                      }))
+                    }
+                    placeholder="https://..."
+                    className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                  />
+                </label>
+              </div>
+
+              <label className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={item.isActive}
+                  onChange={(event) =>
+                    onUpdate(index, (current) => ({
+                      ...current,
+                      isActive: event.target.checked,
+                    }))
+                  }
+                />
+                Aktif
+              </label>
+            </div>
+          </div>
+        ))}
+
+        {items.length === 0 && (
+          <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
+            Henuz kurum eklenmedi.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -397,7 +397,7 @@ export async function getProgramsList(
   const { data: translationData, error: translationError } = await client
     .from("program_translations")
     .select(
-      "id, program_id, locale, title, subtitle, summary, story_markdown, cover_image_alt, who_is_it_for, itinerary_json, included_items, excluded_items, seo_title, seo_description",
+      "id, program_id, locale, title, subtitle, summary, story_markdown, archive_recap_markdown, archive_highlights, cover_image_alt, who_is_it_for, itinerary_json, included_items, excluded_items, seo_title, seo_description",
     )
     .in("program_id", programIds)
     .in("locale", localeCandidates(locale));
@@ -444,7 +444,7 @@ export async function getProgramDetailBySlug(
   const { data: translationData, error: translationError } = await client
     .from("program_translations")
     .select(
-      "id, program_id, locale, title, subtitle, summary, story_markdown, cover_image_alt, who_is_it_for, itinerary_json, included_items, excluded_items, seo_title, seo_description",
+      "id, program_id, locale, title, subtitle, summary, story_markdown, archive_recap_markdown, archive_highlights, cover_image_alt, who_is_it_for, itinerary_json, included_items, excluded_items, seo_title, seo_description",
     )
     .eq("program_id", program.id)
     .in("locale", localeCandidates(locale));

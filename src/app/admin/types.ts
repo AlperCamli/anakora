@@ -62,6 +62,8 @@ export interface ProgramTranslationValue {
   subtitle: string;
   summary: string;
   storyMarkdown: string;
+  archiveRecapMarkdown: string;
+  archiveHighlights: string;
   coverImageAlt: string;
   whoIsItFor: string;
   itineraryJson: string;
@@ -220,6 +222,7 @@ export interface TestimonialEditorValue {
 export interface TestimonialListItem {
   id: string;
   slug: string | null;
+  authorImageUrl: string | null;
   primaryProgramId: string | null;
   linkedProgramCount: number;
   guideId: string | null;
@@ -312,6 +315,16 @@ export interface HomepageSectionEditorValue {
   en: HomepageSectionLocaleValue;
 }
 
+export interface HomepageTrustedOrganizationEditorValue {
+  id?: string;
+  organizationName: string;
+  logoUrl: string;
+  logoAlt: string;
+  websiteUrl: string;
+  sortOrder: string;
+  isActive: boolean;
+}
+
 export interface SiteSettingsLocaleValue {
   id?: string;
   locale: AppLocale;
@@ -343,7 +356,8 @@ export type MediaModule =
   | "program"
   | "guide"
   | "testimonials"
-  | "homepage";
+  | "homepage"
+  | "logo";
 
 export interface MediaLibraryItem {
   bucket: string;

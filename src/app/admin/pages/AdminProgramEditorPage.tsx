@@ -33,6 +33,13 @@ function createEmptyFaq(index: number): ProgramFaqValue {
   };
 }
 
+function hasLineContent(value: string) {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0).length > 0;
+}
+
 export function AdminProgramEditorPage() {
   const { programId } = useParams();
   const navigate = useNavigate();
@@ -104,6 +111,27 @@ export function AdminProgramEditorPage() {
     const source = value.slug || value.tr.title || value.en.title;
     return normalizeSlug(source);
   }, [value.en.title, value.slug, value.tr.title]);
+
+  const needsArchiveRecapWarning = useMemo(() => {
+    if (value.status !== "completed") {
+      return false;
+    }
+
+    const trReady =
+      value.tr.archiveRecapMarkdown.trim().length > 0 &&
+      hasLineContent(value.tr.archiveHighlights);
+    const enReady =
+      value.en.archiveRecapMarkdown.trim().length > 0 &&
+      hasLineContent(value.en.archiveHighlights);
+
+    return !(trReady && enReady);
+  }, [
+    value.en.archiveHighlights,
+    value.en.archiveRecapMarkdown,
+    value.status,
+    value.tr.archiveHighlights,
+    value.tr.archiveRecapMarkdown,
+  ]);
 
   function updateField<K extends keyof ProgramEditorValue>(
     key: K,
@@ -277,6 +305,13 @@ export function AdminProgramEditorPage() {
             }`}
           >
             {saveError || saveMessage}
+          </p>
+        )}
+
+        {needsArchiveRecapWarning && (
+          <p className="mt-3 rounded-md border border-terracotta/30 bg-terracotta/10 px-3 py-2 text-sm text-foreground">
+            Program durumu "tamamlandi". Arsiv kalitesi icin TR/EN etkinlik ozeti ve one
+            cikanlar alanlarini doldurmaniz onerilir.
           </p>
         )}
       </div>
@@ -561,6 +596,28 @@ export function AdminProgramEditorPage() {
               />
             </label>
             <label className="block space-y-1 text-sm">
+              <span>Etkinlik ozeti markdown (Arsiv)</span>
+              <textarea
+                value={value.tr.archiveRecapMarkdown}
+                onChange={(event) =>
+                  updateTrField("archiveRecapMarkdown", event.target.value)
+                }
+                rows={5}
+                className="w-full rounded-md border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="block space-y-1 text-sm">
+              <span>One cikanlar (Arsiv, her satir bir madde)</span>
+              <textarea
+                value={value.tr.archiveHighlights}
+                onChange={(event) =>
+                  updateTrField("archiveHighlights", event.target.value)
+                }
+                rows={4}
+                className="w-full rounded-md border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="block space-y-1 text-sm">
               <span>Kapak gorseli alt metin</span>
               <input
                 value={value.tr.coverImageAlt}
@@ -658,6 +715,28 @@ export function AdminProgramEditorPage() {
                 value={value.en.storyMarkdown}
                 onChange={(event) => updateEnField("storyMarkdown", event.target.value)}
                 rows={5}
+                className="w-full rounded-md border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="block space-y-1 text-sm">
+              <span>Event recap markdown (Archive)</span>
+              <textarea
+                value={value.en.archiveRecapMarkdown}
+                onChange={(event) =>
+                  updateEnField("archiveRecapMarkdown", event.target.value)
+                }
+                rows={5}
+                className="w-full rounded-md border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="block space-y-1 text-sm">
+              <span>Highlights (Archive, one item per line)</span>
+              <textarea
+                value={value.en.archiveHighlights}
+                onChange={(event) =>
+                  updateEnField("archiveHighlights", event.target.value)
+                }
+                rows={4}
                 className="w-full rounded-md border border-border bg-background px-3 py-2"
               />
             </label>

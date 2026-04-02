@@ -13,6 +13,8 @@ const DEFAULT_TRANSLATION: ProgramTranslationValue = {
   subtitle: "",
   summary: "",
   storyMarkdown: "",
+  archiveRecapMarkdown: "",
+  archiveHighlights: "",
   coverImageAlt: "",
   whoIsItFor: "",
   itineraryJson: "[]",
@@ -341,6 +343,8 @@ function mapTranslation(row?: Record<string, unknown>): ProgramTranslationValue 
     subtitle: String(row.subtitle ?? ""),
     summary: String(row.summary ?? ""),
     storyMarkdown: String(row.story_markdown ?? ""),
+    archiveRecapMarkdown: String(row.archive_recap_markdown ?? ""),
+    archiveHighlights: stringifyLineArray(row.archive_highlights),
     coverImageAlt: String(row.cover_image_alt ?? ""),
     whoIsItFor: stringifyLineArray(row.who_is_it_for),
     itineraryJson: stringifyJsonArray(row.itinerary_json),
@@ -375,7 +379,7 @@ export async function getProgramEditorById(
     supabase
       .from("program_translations")
       .select(
-        "id, locale, title, subtitle, summary, story_markdown, cover_image_alt, who_is_it_for, itinerary_json, included_items, excluded_items, seo_title, seo_description",
+        "id, locale, title, subtitle, summary, story_markdown, archive_recap_markdown, archive_highlights, cover_image_alt, who_is_it_for, itinerary_json, included_items, excluded_items, seo_title, seo_description",
       )
       .eq("program_id", programId)
       .in("locale", ["tr", "en"]),
@@ -603,6 +607,8 @@ export async function saveProgram(
       subtitle: trimOrNull(values.tr.subtitle),
       summary: trimOrNull(values.tr.summary),
       story_markdown: trimOrNull(values.tr.storyMarkdown),
+      archive_recap_markdown: trimOrNull(values.tr.archiveRecapMarkdown),
+      archive_highlights: toLineArray(values.tr.archiveHighlights),
       cover_image_alt: trimOrNull(values.tr.coverImageAlt),
       who_is_it_for: toLineArray(values.tr.whoIsItFor),
       itinerary_json: parseJsonArray(values.tr.itineraryJson),
@@ -618,6 +624,8 @@ export async function saveProgram(
       subtitle: trimOrNull(values.en.subtitle),
       summary: trimOrNull(values.en.summary),
       story_markdown: trimOrNull(values.en.storyMarkdown),
+      archive_recap_markdown: trimOrNull(values.en.archiveRecapMarkdown),
+      archive_highlights: toLineArray(values.en.archiveHighlights),
       cover_image_alt: trimOrNull(values.en.coverImageAlt),
       who_is_it_for: toLineArray(values.en.whoIsItFor),
       itinerary_json: parseJsonArray(values.en.itineraryJson),

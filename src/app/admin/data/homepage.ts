@@ -3,6 +3,7 @@ import type {
   HomepageSectionEditorValue,
   HomepageSectionKey,
   HomepageSectionLocaleValue,
+  HomepageTrustedOrganizationEditorValue,
 } from "../types";
 import { parseInteger, parseJsonObject, stringifyJson, trimOrNull } from "./_helpers";
 
@@ -244,5 +245,128 @@ export async function saveHomepageSections(
     .upsert(upsertRows, { onConflict: "section_key,locale" });
   if (error) {
     throw new Error(error.message);
+  }
+}
+
+export function createEmptyHomepageTrustedOrganization(
+  sortOrder: number,
+): HomepageTrustedOrganizationEditorValue {
+  return {
+    organizationName: "",
+    logoUrl: "",
+    logoAlt: "",
+    websiteUrl: "",
+    sortOrder: String(sortOrder),
+    isActive: true,
+  };
+}
+
+export async function listHomepageTrustedOrganizations(): Promise<
+  HomepageTrustedOrganizationEditorValue[]
+> {
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase
+    .from("homepage_trusted_organizations")
+    .select(
+      "id, organization_name, logo_url, logo_alt, website_url, sort_order, is_active",
+    )
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+    id: String(row.id),
+    organizationName: String(row.organization_name ?? ""),
+    logoUrl: String(row.logo_url ?? ""),
+    logoAlt: String(row.logo_alt ?? ""),
+    websiteUrl: String(row.website_url ?? ""),
+    sortOrder: String(row.sort_order ?? 0),
+    isActive: Boolean(row.is_active),
+  }));
+}
+
+export async function saveHomepageTrustedOrganizations(
+  items: HomepageTrustedOrganizationEditorValue[],
+  adminUserId: string,
+): Promise<void> {
+  const supabase = getSupabaseBrowserClient();
+  const { data: existingRows, error: existingError } = await supabase
+    .from("homepage_trusted_organizations")
+    .select("id");
+  if (existingError) {
+    throw new Error(existingError.message);
+  }
+
+  const persistedRows = items
+    .map((item, index) => {
+      const organizationName = item.organizationName.trim();
+      const logoUrl = item.logoUrl.trim();
+      const logoAlt = trimOrNull(item.logoAlt);
+      const websiteUrl = trimOrNull(item.websiteUrl);
+
+      const isEmptyRow =
+        !organizationName &&
+        !logoUrl &&
+        !logoAlt &&
+        !websiteUrl;
+      if (isEmptyRow) {
+        return null;
+      }
+
+      if (!organizationName) {
+        throw new Error(`Kurum adi zorunludur (satir ${index + 1}).`);
+      }
+      if (!logoUrl) {
+        throw new Error(`Logo gorseli zorunludur (satir ${index + 1}).`);
+      }
+
+      const sortOrder =
+        parseInteger(item.sortOrder, `Kurum sirasi (${organizationName})`) ??
+        (index + 1) * 10;
+      const id = item.id ?? crypto.randomUUID();
+
+      const row: Record<string, unknown> = {
+        id,
+        organization_name: organizationName,
+        logo_url: logoUrl,
+        logo_alt: logoAlt,
+        website_url: websiteUrl,
+        sort_order: sortOrder,
+        is_active: item.isActive,
+        updated_by: adminUserId,
+      };
+
+      if (!item.id) {
+        row.created_by = adminUserId;
+      }
+
+      return row;
+    })
+    .filter((row): row is Record<string, unknown> => Boolean(row));
+
+  if (persistedRows.length > 0) {
+    const { error: upsertError } = await supabase
+      .from("homepage_trusted_organizations")
+      .upsert(persistedRows, { onConflict: "id" });
+    if (upsertError) {
+      throw new Error(upsertError.message);
+    }
+  }
+
+  const keepIds = new Set(persistedRows.map((row) => String(row.id)));
+  const deleteIds = ((existingRows ?? []) as Array<Record<string, unknown>>)
+    .map((row) => String(row.id))
+    .filter((id) => !keepIds.has(id));
+
+  if (deleteIds.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("homepage_trusted_organizations")
+      .delete()
+      .in("id", deleteIds);
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
   }
 }

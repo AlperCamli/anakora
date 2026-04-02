@@ -13,6 +13,7 @@ import {
   type ArchiveDTO,
   type HomePageDTO,
   type ProgramCardDTO,
+  type TrustedOrganizationDTO,
 } from "../../server/data";
 import {
   toExperienceCardViewModel,
@@ -46,6 +47,7 @@ const FALLBACK_WHY_ITEMS: WhyItem[] = [
 ];
 
 const WHY_ICONS = [Heart, Users, Leaf, Compass];
+const TRUSTED_ORGS_MARQUEE_THRESHOLD = 5;
 
 function asObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -90,6 +92,66 @@ function asWhyItems(value: unknown): WhyItem[] {
       return { title, description };
     })
     .filter((item): item is WhyItem => Boolean(item));
+}
+
+function TrustedOrganizationLogo({
+  organization,
+}: {
+  organization: TrustedOrganizationDTO;
+}) {
+  return (
+    <div className="trusted-logo-item">
+      <img
+        src={organization.logo.url}
+        alt={organization.logo.alt ?? organization.organizationName}
+        loading="lazy"
+        decoding="async"
+        className="h-full w-full object-contain opacity-85 saturate-0"
+      />
+    </div>
+  );
+}
+
+function TrustedOrganizationsStrip({
+  organizations,
+}: {
+  organizations: TrustedOrganizationDTO[];
+}) {
+  if (organizations.length === 0) {
+    return null;
+  }
+
+  if (organizations.length < TRUSTED_ORGS_MARQUEE_THRESHOLD) {
+    return (
+      <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+        {organizations.map((organization) => (
+          <TrustedOrganizationLogo
+            key={organization.id}
+            organization={organization}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  const marqueeItems = [...organizations, ...organizations];
+  return (
+    <div className="trusted-logo-marquee mt-10">
+      <div className="trusted-logo-track">
+        {marqueeItems.map((organization, index) => {
+          const isDuplicate = index >= organizations.length;
+          return (
+            <div
+              key={`${organization.id}-${index}`}
+              aria-hidden={isDuplicate}
+            >
+              <TrustedOrganizationLogo organization={organization} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export function HomePage() {
@@ -175,6 +237,7 @@ export function HomePage() {
   const upcomingPrograms = programs.slice(0, 3);
   const archivePreviewImages =
     archiveData?.years.flatMap((year) => year.programs).slice(0, 4) ?? [];
+  const trustedOrganizations = homeData?.trustedOrganizations ?? [];
   const whyItems =
     asWhyItems(asObject(whySection?.payload).items) || FALLBACK_WHY_ITEMS;
   const safeWhyItems = whyItems.length > 0 ? whyItems : FALLBACK_WHY_ITEMS;
@@ -250,6 +313,7 @@ export function HomePage() {
                   ? "Communities and partners that trust ANAKORA"
                   : "Bize guvenen kurumlar ve topluluklar")}
             </p>
+            <TrustedOrganizationsStrip organizations={trustedOrganizations} />
           </motion.div>
         </div>
       </section>

@@ -209,6 +209,7 @@ export function ProgramDetailPage() {
     locale,
   );
   const categoryLabel = program.categories[0]?.name ?? "ANAKORA";
+  const isCompleted = program.status === "completed";
 
   return (
     <div className="pt-20 lg:pt-24 min-h-screen bg-background">
@@ -271,18 +272,27 @@ export function ProgramDetailPage() {
             </div>
             <div className="flex items-center gap-4">
               {price && <span className="text-xl lg:text-2xl font-serif">{price}</span>}
-              <button
-                onClick={() => setShowBookingForm(true)}
-                className="px-6 py-2.5 bg-primary-foreground text-primary rounded-sm font-medium hover:bg-primary-foreground/90 transition-all"
-              >
-                {locale === "en"
-                  ? program.bookingMode === "direct"
-                    ? "Book Now"
-                    : "Apply"
-                  : program.bookingMode === "direct"
-                    ? "Hemen Rezerve Et"
-                    : "Basvuru Yap"}
-              </button>
+              {!isCompleted ? (
+                <button
+                  onClick={() => setShowBookingForm(true)}
+                  className="px-6 py-2.5 bg-primary-foreground text-primary rounded-sm font-medium hover:bg-primary-foreground/90 transition-all"
+                >
+                  {locale === "en"
+                    ? program.bookingMode === "direct"
+                      ? "Book Now"
+                      : "Apply"
+                    : program.bookingMode === "direct"
+                      ? "Hemen Rezerve Et"
+                      : "Basvuru Yap"}
+                </button>
+              ) : (
+                <Link
+                  to="/deneyimler"
+                  className="px-6 py-2.5 border border-primary-foreground/40 rounded-sm text-sm font-medium hover:bg-primary-foreground/10 transition-all"
+                >
+                  {locale === "en" ? "See Upcoming Programs" : "Yaklasan Programlari Gor"}
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -291,6 +301,38 @@ export function ProgramDetailPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
           <div className="lg:col-span-2 space-y-12">
+            {(program.archiveRecapMarkdown || program.archiveHighlights.length > 0) && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                <h2 className="text-2xl lg:text-4xl font-serif mb-6">
+                  {locale === "en" ? "Event Recap" : "Etkinlik Ozeti"}
+                </h2>
+                {program.archiveRecapMarkdown && (
+                  <div className="prose prose-lg max-w-none text-foreground/80 leading-relaxed space-y-4 mb-6">
+                    {program.archiveRecapMarkdown
+                      .split("\n\n")
+                      .map((paragraph, index) => (
+                        <p key={index}>{paragraph}</p>
+                      ))}
+                  </div>
+                )}
+                {program.archiveHighlights.length > 0 && (
+                  <ul className="space-y-2">
+                    {program.archiveHighlights.map((item, index) => (
+                      <li key={`${item}-${index}`} className="flex items-start gap-2">
+                        <Check size={18} className="text-secondary mt-1 flex-shrink-0" />
+                        <span className="text-foreground/80">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </motion.section>
+            )}
+
             {program.storyMarkdown && (
               <motion.section
                 initial={{ opacity: 0, y: 20 }}
@@ -436,7 +478,7 @@ export function ProgramDetailPage() {
                   </p>
                 </div>
 
-                {program.spotsLeft != null && program.spotsLeft <= 3 && (
+                {!isCompleted && program.spotsLeft != null && program.spotsLeft <= 3 && (
                   <div className="mb-6 px-4 py-3 bg-accent/10 border border-accent rounded-sm">
                     <p className="text-sm font-medium text-accent-foreground">
                       {locale === "en"
@@ -446,18 +488,35 @@ export function ProgramDetailPage() {
                   </div>
                 )}
 
-                <button
-                  onClick={() => setShowBookingForm(true)}
-                  className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-sm font-medium hover:bg-accent transition-all mb-4"
-                >
-                  {locale === "en" ? "Send Interest" : "Ilgi Formu Gonder"}
-                </button>
-
-                <p className="text-xs text-muted-foreground mt-4 text-center">
-                  {locale === "en"
-                    ? "No immediate payment required."
-                    : "Hemen odeme yapmaniza gerek yok."}
-                </p>
+                {!isCompleted ? (
+                  <>
+                    <button
+                      onClick={() => setShowBookingForm(true)}
+                      className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-sm font-medium hover:bg-accent transition-all mb-4"
+                    >
+                      {locale === "en" ? "Send Interest" : "Ilgi Formu Gonder"}
+                    </button>
+                    <p className="text-xs text-muted-foreground mt-4 text-center">
+                      {locale === "en"
+                        ? "No immediate payment required."
+                        : "Hemen odeme yapmaniza gerek yok."}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-4 rounded-sm border border-border bg-muted/40 px-4 py-3 text-sm text-foreground/80">
+                      {locale === "en"
+                        ? "This experience is completed. You can review recap details below."
+                        : "Bu deneyim tamamlandi. Asagida etkinlik ozeti detaylarini gorebilirsiniz."}
+                    </div>
+                    <Link
+                      to="/deneyimler"
+                      className="inline-flex w-full justify-center rounded-sm border border-primary px-6 py-3 text-sm font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                    >
+                      {locale === "en" ? "Explore Upcoming Programs" : "Yaklasan Programlari Kesfet"}
+                    </Link>
+                  </>
+                )}
               </div>
 
               <div className="bg-card border border-border rounded-sm p-6">
@@ -523,7 +582,7 @@ export function ProgramDetailPage() {
         </div>
       </div>
 
-      {showBookingForm && (
+      {!isCompleted && showBookingForm && (
         <div
           className="fixed inset-0 bg-foreground/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setShowBookingForm(false)}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AdminImagePreview } from "../components/AdminImagePreview";
 import { AdminLocaleCompleteness } from "../components/AdminLocaleCompleteness";
 import { AdminRoleGate } from "../components/AdminRoleGate";
 import { AdminStateCard } from "../components/AdminStateCard";
@@ -301,6 +302,7 @@ function TestimonialsContent() {
           <table className="min-w-full divide-y divide-border text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
               <tr>
+                <th className="px-4 py-3">Gorsel</th>
                 <th className="px-4 py-3">Yazar</th>
                 <th className="px-4 py-3">Dil</th>
                 <th className="px-4 py-3">Durum</th>
@@ -311,6 +313,15 @@ function TestimonialsContent() {
             <tbody className="divide-y divide-border">
               {filteredItems.map((item) => (
                 <tr key={item.id} className="align-top">
+                  <td className="px-4 py-3">
+                    <AdminImagePreview
+                      src={item.authorImageUrl}
+                      alt={`${item.trAuthorName || item.enAuthorName || "Yazar"} gorseli`}
+                      className="h-14 w-14 rounded-md border border-border bg-muted/30"
+                      imageClassName="h-full w-full rounded-md object-contain p-1"
+                      fallbackLabel="Yok"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <p className="font-medium">{item.trAuthorName || item.enAuthorName || "-"}</p>
                     <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
@@ -364,7 +375,7 @@ function TestimonialsContent() {
               ))}
               {filteredItems.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">
                     Secili filtrelere uygun yorum bulunamadi.
                   </td>
                 </tr>
@@ -477,6 +488,13 @@ function TestimonialsContent() {
                   className="w-full rounded-md border border-border bg-background px-3 py-2"
                 />
               </label>
+              <AdminImagePreview
+                src={editorValue.authorImageUrl}
+                alt="Yazar gorseli onizleme"
+                className="h-56 w-full rounded-md border border-border bg-muted/20"
+                imageClassName="h-full w-full rounded-md object-contain p-2"
+                fallbackLabel="Yazar gorseli onizlemesi yok"
+              />
 
               <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                 <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2">

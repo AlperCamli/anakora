@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { AdminImagePreview } from "../components/AdminImagePreview";
 import { AdminRoleGate } from "../components/AdminRoleGate";
 import { AdminStateCard } from "../components/AdminStateCard";
 import {
+  getMediaPreviewUrl,
   MEDIA_MODULE_LABELS,
   MEDIA_MODULES,
   getBucketForVisibility,
@@ -44,6 +46,8 @@ function MediaContent() {
   const [uploading, setUploading] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [selectedPreviewUrl, setSelectedPreviewUrl] = useState<string | null>(null);
+  const [selectedPreviewError, setSelectedPreviewError] = useState<string | null>(null);
 
   async function loadLibrary() {
     setLoading(true);
@@ -71,6 +75,45 @@ function MediaContent() {
     void loadLibrary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility, moduleName]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function run() {
+      if (!selectedItem) {
+        setSelectedPreviewUrl(null);
+        setSelectedPreviewError(null);
+        return;
+      }
+
+      setSelectedPreviewUrl(null);
+      setSelectedPreviewError(null);
+      try {
+        const previewUrl = await getMediaPreviewUrl({
+          visibility,
+          item: selectedItem,
+        });
+        if (!mounted) {
+          return;
+        }
+        setSelectedPreviewUrl(previewUrl);
+      } catch (previewError) {
+        if (!mounted) {
+          return;
+        }
+        setSelectedPreviewError(
+          previewError instanceof Error
+            ? previewError.message
+            : "Onizleme URL'i olusturulamadi.",
+        );
+      }
+    }
+
+    void run();
+    return () => {
+      mounted = false;
+    };
+  }, [selectedItem, visibility]);
 
   async function handleUpload() {
     if (!selectedFile) {
@@ -222,10 +265,21 @@ function MediaContent() {
                     : "border-border hover:bg-muted"
                 }`}
               >
-                <p className="font-medium">{item.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {item.path} • {formatSize(item.size)}
-                </p>
+                <div className="flex items-center gap-3">
+                  <AdminImagePreview
+                    src={visibility === "public" ? item.publicUrl : null}
+                    alt={`${item.name} onizleme`}
+                    className="h-14 w-14 shrink-0 rounded-md border border-border bg-muted/30"
+                    imageClassName="h-full w-full rounded-md object-contain p-1"
+                    fallbackLabel={visibility === "public" ? "Gorsel yok" : "Ozel"}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{item.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {item.path} • {formatSize(item.size)}
+                    </p>
+                  </div>
+                </div>
               </button>
             ))}
             {items.length === 0 && (
@@ -237,6 +291,18 @@ function MediaContent() {
 
           {selectedItem && (
             <div className="mt-4 space-y-2 rounded-md border border-border bg-background p-3">
+              <AdminImagePreview
+                src={selectedPreviewUrl}
+                alt={`${selectedItem.name} onizleme`}
+                className="h-56 w-full rounded-md border border-border bg-muted/20"
+                imageClassName="h-full w-full rounded-md object-contain p-2"
+                fallbackLabel="Onizleme gorseli yok"
+              />
+              {selectedPreviewError && (
+                <p className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+                  {selectedPreviewError}
+                </p>
+              )}
               <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
                 Referans bicimleri
               </p>

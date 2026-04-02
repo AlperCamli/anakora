@@ -46,6 +46,16 @@ export interface HomepageSectionRow {
   is_active: boolean;
 }
 
+export interface HomepageTrustedOrganizationRow {
+  id: string;
+  organization_name: string;
+  logo_url: string;
+  logo_alt: string | null;
+  website_url: string | null;
+  sort_order: number;
+  is_active: boolean;
+}
+
 export interface ProgramRow {
   id: string;
   slug: string;
@@ -76,6 +86,8 @@ export interface ProgramTranslationRow {
   subtitle: string | null;
   summary: string | null;
   story_markdown: string | null;
+  archive_recap_markdown: string | null;
+  archive_highlights: JsonValue;
   cover_image_alt: string | null;
   who_is_it_for: JsonValue;
   itinerary_json: JsonValue;

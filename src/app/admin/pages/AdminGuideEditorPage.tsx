@@ -8,6 +8,7 @@ import {
   saveGuide,
 } from "../data/guides";
 import type { GuideEditorValue } from "../types";
+import { AdminImagePreview } from "../components/AdminImagePreview";
 import { AdminStateCard } from "../components/AdminStateCard";
 
 export function AdminGuideEditorPage() {
@@ -221,6 +222,13 @@ export function AdminGuideEditorPage() {
                 className="w-full rounded-md border border-border bg-background px-3 py-2"
               />
             </label>
+            <AdminImagePreview
+              src={value.avatarUrl}
+              alt="Rehber avatar onizleme"
+              className="h-56 w-full rounded-md border border-border bg-muted/20"
+              imageClassName="h-full w-full rounded-md object-contain p-2"
+              fallbackLabel="Avatar onizlemesi yok"
+            />
 
             <div className="flex items-center gap-6 text-sm">
               <label className="flex items-center gap-2">

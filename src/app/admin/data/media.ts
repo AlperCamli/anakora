@@ -4,6 +4,7 @@ import type { MediaLibraryItem, MediaModule, MediaVisibility } from "../types";
 const DEFAULT_PUBLIC_BUCKET = "public-assets";
 const DEFAULT_PRIVATE_BUCKET = "admin-uploads";
 const DEFAULT_LIST_PAGE_SIZE = 100;
+const DEFAULT_SIGNED_PREVIEW_EXPIRES_IN_SECONDS = 300;
 
 export const MEDIA_MODULES: MediaModule[] = [
   "journal",
@@ -11,6 +12,7 @@ export const MEDIA_MODULES: MediaModule[] = [
   "guide",
   "testimonials",
   "homepage",
+  "logo",
 ];
 
 export const MEDIA_MODULE_LABELS: Record<MediaModule, string> = {
@@ -19,6 +21,7 @@ export const MEDIA_MODULE_LABELS: Record<MediaModule, string> = {
   guide: "Rehber",
   testimonials: "Yorumlar",
   homepage: "Anasayfa",
+  logo: "Logo",
 };
 
 function readBucketName(visibility: MediaVisibility) {
@@ -237,4 +240,32 @@ export async function removeMediaObject(reference: string): Promise<void> {
   if (error) {
     throw new Error(error.message);
   }
+}
+
+export async function getMediaPreviewUrl(input: {
+  visibility: MediaVisibility;
+  item: Pick<MediaLibraryItem, "bucket" | "path" | "publicUrl">;
+  expiresInSeconds?: number;
+}): Promise<string | null> {
+  const supabase = getSupabaseBrowserClient();
+
+  if (input.visibility === "public") {
+    return (
+      input.item.publicUrl ??
+      supabase.storage.from(input.item.bucket).getPublicUrl(input.item.path).data.publicUrl
+    );
+  }
+
+  const { data, error } = await supabase.storage
+    .from(input.item.bucket)
+    .createSignedUrl(
+      input.item.path,
+      input.expiresInSeconds ?? DEFAULT_SIGNED_PREVIEW_EXPIRES_IN_SECONDS,
+    );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.signedUrl ?? null;
 }

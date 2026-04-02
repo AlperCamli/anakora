@@ -169,6 +169,8 @@ export function mapProgramDetailDTO({
   return {
     ...base,
     storyMarkdown: translation?.story_markdown ?? null,
+    archiveRecapMarkdown: translation?.archive_recap_markdown ?? null,
+    archiveHighlights: asArray<string>(translation?.archive_highlights ?? [], []),
     whoIsItFor: asArray<string>(translation?.who_is_it_for ?? [], []),
     itinerary: asArray<unknown>(translation?.itinerary_json ?? [], []),
     includedItems: asArray<string>(translation?.included_items ?? [], []),

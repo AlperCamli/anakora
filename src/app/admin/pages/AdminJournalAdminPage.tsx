@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AdminImagePreview } from "../components/AdminImagePreview";
 import { AdminLocaleCompleteness } from "../components/AdminLocaleCompleteness";
 import { AdminRoleGate } from "../components/AdminRoleGate";
 import { AdminStateCard } from "../components/AdminStateCard";
@@ -275,6 +276,7 @@ function JournalAdminPageContent() {
           <table className="min-w-full divide-y divide-border text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
               <tr>
+                <th className="px-4 py-3">Gorsel</th>
                 <th className="px-4 py-3">Icerik</th>
                 <th className="px-4 py-3">Dil</th>
                 <th className="px-4 py-3">Durum</th>
@@ -287,6 +289,15 @@ function JournalAdminPageContent() {
                   className="cursor-pointer align-top hover:bg-muted/40"
                   onClick={() => void loadPostEditor(post.id)}
                 >
+                  <td className="px-4 py-3">
+                    <AdminImagePreview
+                      src={post.coverImageUrl}
+                      alt={`${post.trTitle || post.enTitle || post.slug} kapak gorseli`}
+                      className="h-14 w-14 rounded-md border border-border bg-muted/30"
+                      imageClassName="h-full w-full rounded-md object-contain p-1"
+                      fallbackLabel="Yok"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <p className="font-medium">{post.trTitle || post.enTitle || post.slug}</p>
                     <p className="mt-1 text-xs text-muted-foreground">/{post.slug}</p>
@@ -308,7 +319,7 @@ function JournalAdminPageContent() {
               ))}
               {filteredPosts.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
                     Secili filtreler icin icerik bulunamadi.
                   </td>
                 </tr>

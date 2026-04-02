@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
+import { ArrowRight, Calendar, MapPin, Users } from "lucide-react";
 import { getArchive, type ArchiveDTO } from "../../server/data";
 import { useSiteData } from "../context/SiteDataContext";
 import { formatDateRange } from "../lib/formatters";
@@ -56,6 +57,14 @@ export function ArchivePage() {
     [archive?.years],
   );
 
+  const yearCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const year of archive?.years ?? []) {
+      counts.set(String(year.year), year.programs.length);
+    }
+    return counts;
+  }, [archive?.years]);
+
   const selectedItems = useMemo(() => {
     return (
       archive?.years.find((year) => String(year.year) === selectedYear)?.programs ?? []
@@ -87,7 +96,7 @@ export function ArchivePage() {
       {!loading && years.length > 0 && (
         <section className="py-8 border-b border-border sticky top-20 lg:top-24 bg-background/95 backdrop-blur-md z-30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4 overflow-x-auto pb-2">
               {years.map((year) => (
                 <button
                   key={year}
@@ -98,7 +107,7 @@ export function ArchivePage() {
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
                 >
-                  {year}
+                  {year} ({yearCounts.get(year) ?? 0})
                 </button>
               ))}
             </div>
@@ -109,13 +118,17 @@ export function ArchivePage() {
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {loading && (
-            <p className="text-sm text-muted-foreground">
+            <p className="rounded-sm border border-border px-4 py-3 text-sm text-muted-foreground">
               {locale === "en" ? "Loading archive..." : "Arsiv yukleniyor..."}
             </p>
           )}
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <p className="rounded-sm border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              {error}
+            </p>
+          )}
           {!loading && !error && selectedItems.length === 0 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="rounded-sm border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
               {locale === "en"
                 ? "No archive entries yet."
                 : "Arsivde henuz gosterilecek deneyim yok."}
@@ -151,19 +164,62 @@ export function ArchivePage() {
                 </div>
 
                 <div className={index % 2 === 1 ? "lg:direction-ltr" : ""}>
-                  <p className="text-sm text-muted-foreground mb-2 tracking-wide">
-                    {formatDateRange(item.startsAt, item.endsAt, locale)} -{" "}
-                    {[item.locationName, item.city].filter(Boolean).join(", ")}
-                  </p>
+                  <div className="mb-4 space-y-2 text-sm text-muted-foreground">
+                    <p className="flex items-center gap-2 tracking-wide">
+                      <Calendar size={16} className="text-secondary" />
+                      <span>{formatDateRange(item.startsAt, item.endsAt, locale)}</span>
+                    </p>
+                    <p className="flex items-center gap-2 tracking-wide">
+                      <MapPin size={16} className="text-secondary" />
+                      <span>{[item.locationName, item.city].filter(Boolean).join(", ")}</span>
+                    </p>
+                    <p className="flex items-center gap-2 tracking-wide">
+                      <Users size={16} className="text-secondary" />
+                      <span>
+                        {item.capacity != null
+                          ? locale === "en"
+                            ? `Capacity context: ${item.capacity} participants`
+                            : `Kapasite baglami: ${item.capacity} katilimci`
+                          : locale === "en"
+                            ? "Participant capacity not specified"
+                            : "Katilimci kapasitesi belirtilmedi"}
+                      </span>
+                    </p>
+                  </div>
                   <h2 className="text-3xl lg:text-4xl font-serif mb-4 text-foreground">
                     {item.title}
                   </h2>
-                  {item.summary && (
+                  {item.recapMarkdown ? (
+                    <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+                      {item.recapMarkdown}
+                    </p>
+                  ) : item.summary ? (
                     <p className="text-lg text-foreground/80 leading-relaxed mb-6">
                       {item.summary}
                     </p>
+                  ) : null}
+                  {item.highlights.length > 0 && (
+                    <ul className="mb-6 space-y-2">
+                      {item.highlights.slice(0, 4).map((highlight, highlightIndex) => (
+                        <li
+                          key={`${highlight}-${highlightIndex}`}
+                          className="text-sm text-foreground/80"
+                        >
+                          - {highlight}
+                        </li>
+                      ))}
+                    </ul>
                   )}
-                  <div className="h-px w-24 bg-secondary" />
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="h-px w-24 bg-secondary" />
+                    <Link
+                      to={`/deneyimler/${item.slug}`}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-accent transition-colors"
+                    >
+                      {locale === "en" ? "Read Full Program Story" : "Tum Program Hikayesini Oku"}
+                      <ArrowRight size={16} />
+                    </Link>
+                  </div>
                 </div>
               </motion.article>
             ))}
