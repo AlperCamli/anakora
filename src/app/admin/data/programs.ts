@@ -1,6 +1,8 @@
 import { getSupabaseBrowserClient } from "../../../lib/supabase/browser-client";
 import type {
   GuideOption,
+  ProgramCategoryEditorValue,
+  ProgramCategoryListItem,
   ProgramCategoryOption,
   ProgramEditorValue,
   ProgramFaqValue,
@@ -164,6 +166,19 @@ export function createEmptyProgramEditorValue(): ProgramEditorValue {
     tr: { ...DEFAULT_TRANSLATION },
     en: { ...DEFAULT_TRANSLATION },
     faqs: [],
+  };
+}
+
+export function createEmptyProgramCategoryEditorValue(): ProgramCategoryEditorValue {
+  return {
+    slug: "",
+    sortOrder: "0",
+    isFeatured: false,
+    isActive: true,
+    trName: "",
+    trDescription: "",
+    enName: "",
+    enDescription: "",
   };
 }
 
@@ -331,6 +346,178 @@ export async function listPrograms(): Promise<ProgramListItem[]> {
       updatedAt: String(row.updated_at ?? ""),
     };
   });
+}
+
+export async function listProgramCategories(): Promise<ProgramCategoryListItem[]> {
+  const supabase = getSupabaseBrowserClient();
+  const [{ data: categoryRows, error: categoriesError }, { data: translationRows, error: translationsError }] =
+    await Promise.all([
+      supabase
+        .from("program_categories")
+        .select("id, slug, sort_order, is_featured, is_active, updated_at")
+        .order("sort_order", { ascending: true })
+        .order("slug", { ascending: true }),
+      supabase
+        .from("program_category_translations")
+        .select("category_id, locale, name")
+        .in("locale", ["tr", "en"]),
+    ]);
+
+  if (categoriesError) {
+    throw new Error(categoriesError.message);
+  }
+  if (translationsError) {
+    throw new Error(translationsError.message);
+  }
+
+  const translationMap = new Map<string, { tr?: string; en?: string }>();
+  for (const row of (translationRows ?? []) as Array<Record<string, unknown>>) {
+    const categoryId = String(row.category_id);
+    const locale = String(row.locale);
+    const name = String(row.name ?? "");
+    const current = translationMap.get(categoryId) ?? {};
+    if (locale === "tr") {
+      current.tr = name;
+    }
+    if (locale === "en") {
+      current.en = name;
+    }
+    translationMap.set(categoryId, current);
+  }
+
+  return ((categoryRows ?? []) as Array<Record<string, unknown>>).map((row) => {
+    const id = String(row.id);
+    const translated = translationMap.get(id);
+    return {
+      id,
+      slug: String(row.slug),
+      sortOrder: Number(row.sort_order ?? 0),
+      isFeatured: Boolean(row.is_featured),
+      isActive: Boolean(row.is_active),
+      trName: translated?.tr ?? null,
+      enName: translated?.en ?? null,
+      updatedAt: String(row.updated_at ?? ""),
+    };
+  });
+}
+
+export async function getProgramCategoryEditorById(
+  categoryId: string,
+): Promise<ProgramCategoryEditorValue> {
+  const supabase = getSupabaseBrowserClient();
+  const [{ data: categoryRow, error: categoryError }, { data: translationRows, error: translationError }] =
+    await Promise.all([
+      supabase
+        .from("program_categories")
+        .select("id, slug, sort_order, is_featured, is_active")
+        .eq("id", categoryId)
+        .maybeSingle(),
+      supabase
+        .from("program_category_translations")
+        .select("category_id, locale, name, description")
+        .eq("category_id", categoryId)
+        .in("locale", ["tr", "en"]),
+    ]);
+
+  if (categoryError) {
+    throw new Error(categoryError.message);
+  }
+  if (translationError) {
+    throw new Error(translationError.message);
+  }
+  if (!categoryRow) {
+    throw new Error("Program kategorisi bulunamadi.");
+  }
+
+  const tr = ((translationRows ?? []) as Array<Record<string, unknown>>).find(
+    (row) => row.locale === "tr",
+  );
+  const en = ((translationRows ?? []) as Array<Record<string, unknown>>).find(
+    (row) => row.locale === "en",
+  );
+
+  return {
+    id: String(categoryRow.id),
+    slug: String(categoryRow.slug),
+    sortOrder: String(categoryRow.sort_order ?? 0),
+    isFeatured: Boolean(categoryRow.is_featured),
+    isActive: Boolean(categoryRow.is_active),
+    trName: String(tr?.name ?? ""),
+    trDescription: String(tr?.description ?? ""),
+    enName: String(en?.name ?? ""),
+    enDescription: String(en?.description ?? ""),
+  };
+}
+
+export async function saveProgramCategory(
+  values: ProgramCategoryEditorValue,
+): Promise<string> {
+  const supabase = getSupabaseBrowserClient();
+  const slug = normalizeSlug(values.slug || values.trName || values.enName);
+  if (!slug) {
+    throw new Error("Kategori slug alani zorunludur.");
+  }
+  if (!values.trName.trim() || !values.enName.trim()) {
+    throw new Error("TR ve EN kategori adlari zorunludur.");
+  }
+
+  const sortOrder = parseInteger(values.sortOrder) ?? 0;
+
+  const payload = {
+    slug,
+    sort_order: sortOrder,
+    is_featured: values.isFeatured,
+    is_active: values.isActive,
+  };
+
+  let categoryId = values.id;
+  if (categoryId) {
+    const { data, error } = await supabase
+      .from("program_categories")
+      .update(payload)
+      .eq("id", categoryId)
+      .select("id")
+      .single();
+    if (error) {
+      throw new Error(error.message);
+    }
+    categoryId = String(data.id);
+  } else {
+    const { data, error } = await supabase
+      .from("program_categories")
+      .insert(payload)
+      .select("id")
+      .single();
+    if (error) {
+      throw new Error(error.message);
+    }
+    categoryId = String(data.id);
+  }
+
+  const { error: translationError } = await supabase
+    .from("program_category_translations")
+    .upsert(
+      [
+        {
+          category_id: categoryId,
+          locale: "tr",
+          name: values.trName.trim(),
+          description: trimOrNull(values.trDescription),
+        },
+        {
+          category_id: categoryId,
+          locale: "en",
+          name: values.enName.trim(),
+          description: trimOrNull(values.enDescription),
+        },
+      ],
+      { onConflict: "category_id,locale" },
+    );
+  if (translationError) {
+    throw new Error(translationError.message);
+  }
+
+  return categoryId;
 }
 
 function mapTranslation(row?: Record<string, unknown>): ProgramTranslationValue {

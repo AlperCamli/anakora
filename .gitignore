@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Local environment
+.env.local
+.env.*.local
+
+# Build and cache artifacts (keep dist tracked intentionally for deployment)
+*.log
+.DS_Store
+supabase/.temp/
+
+# Local tooling files
+ngrok.yml

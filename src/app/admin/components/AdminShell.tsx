@@ -12,6 +12,7 @@ import {
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { AdminStateCard } from "./AdminStateCard";
 import { canAccessAdminPath, requiredCapabilityForPath } from "../lib/permissions";
+import { RouteScrollReset } from "../../components/RouteScrollReset";
 
 interface AdminNavItem {
   label: string;
@@ -119,6 +120,7 @@ export function AdminShell() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <RouteScrollReset />
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px] flex-col lg:flex-row">
         <aside className="w-full border-b border-border bg-card px-4 py-4 lg:w-72 lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
           <div className="mb-6 flex items-center justify-between">

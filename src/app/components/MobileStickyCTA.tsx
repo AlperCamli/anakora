@@ -11,12 +11,24 @@ export function MobileStickyCTA() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 300);
+      const footer = document.getElementById("site-footer");
+      const nearPageBottom =
+        document.documentElement.scrollHeight - (window.innerHeight + window.scrollY) < 180;
+      const nearFooter = footer
+        ? footer.getBoundingClientRect().top <= window.innerHeight - 140
+        : nearPageBottom;
+
+      setIsVisible(window.scrollY > 300 && !nearFooter);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [location.pathname]);
 
   if (location.pathname.includes("/deneyimler")) {
     return null;

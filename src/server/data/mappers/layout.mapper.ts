@@ -1,6 +1,7 @@
 import type { SiteSettingsRow } from "../db-rows";
 import type { LayoutDTO, LinkDTO, Locale } from "../types";
 import { asArray } from "../utils";
+import { normalizeInstagramUrl } from "../../../lib/instagram";
 
 function isLinkDTO(value: unknown): value is LinkDTO {
   if (!value || typeof value !== "object") {
@@ -24,7 +25,7 @@ export function mapSiteSettingsToLayoutDTO(
     tagline: row.tagline,
     contactEmail: row.contact_email,
     contactPhone: row.contact_phone,
-    instagramUrl: row.instagram_url,
+    instagramUrl: normalizeInstagramUrl(row.instagram_url),
     navigation,
     legalLinks,
     footerNewsletterEnabled: row.footer_newsletter_enabled,

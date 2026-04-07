@@ -19,6 +19,11 @@ export interface CategoryDTO {
   description: string | null;
 }
 
+export interface ProgramCategoryFilterDTO extends CategoryDTO {
+  sortOrder: number;
+  isActive: boolean;
+}
+
 export interface GuidePreviewDTO {
   slug: string;
   name: string;

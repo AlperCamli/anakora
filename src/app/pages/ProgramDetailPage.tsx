@@ -16,9 +16,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../components/ui/accordion";
+import { ClearableInput, ClearableTextarea } from "../components/ClearableField";
 import { useSiteData } from "../context/SiteDataContext";
 import { formatDateRange, formatDuration, formatPrice } from "../lib/formatters";
-import { submitLeadSubmission } from "../lib/lead-submissions";
+import {
+  LEAD_FULL_NAME_MAX_LENGTH,
+  LEAD_MESSAGE_MAX_LENGTH,
+  filterPhoneInput,
+  submitLeadSubmission,
+} from "../lib/lead-submissions";
 import { getProgramDetailBySlug, type ProgramDetailDTO } from "../../server/data";
 
 function toDisplayItinerary(itinerary: unknown[]) {
@@ -151,6 +157,8 @@ export function ProgramDetailPage() {
       setSubmissionError(
         result.fieldErrors?.fullName ??
           result.fieldErrors?.email ??
+          result.fieldErrors?.phone ??
+          result.fieldErrors?.message ??
           result.errorMessage ??
           (locale === "en"
             ? "Booking request could not be sent."
@@ -210,6 +218,8 @@ export function ProgramDetailPage() {
   );
   const categoryLabel = program.categories[0]?.name ?? "ANAKORA";
   const isCompleted = program.status === "completed";
+  const hasPricingScopeCard =
+    program.includedItems.length > 0 || program.excludedItems.length > 0;
 
   return (
     <div className="pt-20 lg:pt-24 min-h-screen bg-background">
@@ -479,8 +489,8 @@ export function ProgramDetailPage() {
                 </div>
 
                 {!isCompleted && program.spotsLeft != null && program.spotsLeft <= 3 && (
-                  <div className="mb-6 px-4 py-3 bg-accent/10 border border-accent rounded-sm">
-                    <p className="text-sm font-medium text-accent-foreground">
+                  <div className="mb-6 rounded-sm border border-destructive/40 bg-destructive/10 px-4 py-3">
+                    <p className="text-sm font-semibold text-destructive">
                       {locale === "en"
                         ? `Only ${program.spotsLeft} spots left`
                         : `Son ${program.spotsLeft} yer kaldi`}
@@ -519,45 +529,47 @@ export function ProgramDetailPage() {
                 )}
               </div>
 
-              <div className="bg-card border border-border rounded-sm p-6">
-                {program.includedItems.length > 0 && (
-                  <>
-                    <h3 className="font-serif text-lg mb-4">
-                      {locale === "en" ? "Included" : "Fiyata Dahil"}
-                    </h3>
-                    <ul className="space-y-2 mb-6">
-                      {program.includedItems.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm">
-                          <Check
-                            size={16}
-                            className="text-secondary mt-0.5 flex-shrink-0"
-                          />
-                          <span className="text-foreground/80">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
+              {hasPricingScopeCard && (
+                <div className="bg-card border border-border rounded-sm p-6">
+                  {program.includedItems.length > 0 && (
+                    <>
+                      <h3 className="font-serif text-lg mb-4">
+                        {locale === "en" ? "Included" : "Fiyata Dahil"}
+                      </h3>
+                      <ul className="space-y-2 mb-6">
+                        {program.includedItems.map((item, index) => (
+                          <li key={index} className="flex items-start gap-2 text-sm">
+                            <Check
+                              size={16}
+                              className="text-secondary mt-0.5 flex-shrink-0"
+                            />
+                            <span className="text-foreground/80">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
 
-                {program.excludedItems.length > 0 && (
-                  <>
-                    <h3 className="font-serif text-lg mb-4">
-                      {locale === "en" ? "Not Included" : "Fiyata Dahil Degil"}
-                    </h3>
-                    <ul className="space-y-2">
-                      {program.excludedItems.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm">
-                          <X
-                            size={16}
-                            className="text-muted-foreground mt-0.5 flex-shrink-0"
-                          />
-                          <span className="text-foreground/80">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </div>
+                  {program.excludedItems.length > 0 && (
+                    <>
+                      <h3 className="font-serif text-lg mb-4">
+                        {locale === "en" ? "Not Included" : "Fiyata Dahil Degil"}
+                      </h3>
+                      <ul className="space-y-2">
+                        {program.excludedItems.map((item, index) => (
+                          <li key={index} className="flex items-start gap-2 text-sm">
+                            <X
+                              size={16}
+                              className="text-muted-foreground mt-0.5 flex-shrink-0"
+                            />
+                            <span className="text-foreground/80">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              )}
 
               <div className="bg-muted/50 rounded-sm p-6">
                 <h3 className="font-serif text-lg mb-3">
@@ -611,31 +623,61 @@ export function ProgramDetailPage() {
                 className="hidden"
                 aria-hidden="true"
               />
-              <input
+              <ClearableInput
                 type="text"
                 value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
-                placeholder={locale === "en" ? "Full name" : "Adiniz soyadiniz"}
+                onChange={setFullName}
+                maxLength={LEAD_FULL_NAME_MAX_LENGTH}
+                placeholder={
+                  locale === "en"
+                    ? "Your full name"
+                    : "Adiniz ve soyadiniz"
+                }
+                clearLabel={
+                  locale === "en" ? "Clear full name" : "Ad soyad alanini temizle"
+                }
                 className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <input
+              <ClearableInput
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder={locale === "en" ? "Email" : "E-posta"}
+                onChange={setEmail}
+                placeholder={
+                  locale === "en"
+                    ? "Email address for booking updates"
+                    : "Rezervasyon geri donusu icin e-posta adresi"
+                }
+                clearLabel={
+                  locale === "en" ? "Clear email address" : "E-posta adresini temizle"
+                }
                 className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <input
+              <ClearableInput
                 type="tel"
                 value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                placeholder={locale === "en" ? "Phone" : "Telefon"}
+                onChange={(nextValue) => setPhone(filterPhoneInput(nextValue))}
+                placeholder={
+                  locale === "en"
+                    ? "Phone number for booking updates"
+                    : "Rezervasyon geri donusu icin telefon numarasi"
+                }
+                clearLabel={
+                  locale === "en" ? "Clear phone number" : "Telefon numarasini temizle"
+                }
                 className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <textarea
+              <ClearableTextarea
                 value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                placeholder={locale === "en" ? "Notes (optional)" : "Not (opsiyonel)"}
+                onChange={setMessage}
+                maxLength={LEAD_MESSAGE_MAX_LENGTH}
+                placeholder={
+                  locale === "en"
+                    ? "Questions or notes (optional)"
+                    : "Sorulariniz veya notlariniz (opsiyonel)"
+                }
+                clearLabel={
+                  locale === "en" ? "Clear message" : "Mesaj alanini temizle"
+                }
                 rows={3}
                 className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
               />

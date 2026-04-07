@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "../../../lib/supabase/browser-client";
+import { normalizeInstagramUrl } from "../../../lib/instagram";
 import type { AppLocale, SiteSettingsEditorValue, SiteSettingsLocaleValue } from "../types";
 import { parseJsonArray, parseJsonObject, stringifyJson, trimOrNull } from "./_helpers";
 
@@ -84,7 +85,7 @@ export async function getSiteSettingsEditor(): Promise<SiteSettingsEditorValue> 
       tagline: String(row.tagline ?? ""),
       contactEmail: String(row.contact_email ?? ""),
       contactPhone: String(row.contact_phone ?? ""),
-      instagramUrl: String(row.instagram_url ?? ""),
+      instagramUrl: normalizeInstagramUrl(String(row.instagram_url ?? "")) ?? "",
       defaultSeoTitle: String(row.default_seo_title ?? ""),
       defaultSeoDescription: String(row.default_seo_description ?? ""),
       globalSeoImageUrl: String(row.global_seo_image_url ?? ""),
@@ -123,6 +124,14 @@ function sanitizeLocaleRow(value: SiteSettingsLocaleValue, adminUserId: string) 
     throw new Error(`${value.locale.toUpperCase()} site adi zorunludur.`);
   }
 
+  const instagramUrlInput = value.instagramUrl.trim();
+  const instagramUrl = normalizeInstagramUrl(instagramUrlInput);
+  if (instagramUrlInput && !instagramUrl) {
+    throw new Error(
+      `${value.locale.toUpperCase()} Instagram alani gecersiz. /kullanici, @kullanici, kullanici veya tam URL kullanin.`,
+    );
+  }
+
   const headerNavigation = validateLinkArray(
     parseJsonArray(value.headerNavigationJson, `${value.locale.toUpperCase()} header navigation`),
     `${value.locale.toUpperCase()} header navigation`,
@@ -148,7 +157,7 @@ function sanitizeLocaleRow(value: SiteSettingsLocaleValue, adminUserId: string) 
     tagline: trimOrNull(value.tagline),
     contact_email: trimOrNull(contactEmail),
     contact_phone: trimOrNull(value.contactPhone),
-    instagram_url: trimOrNull(value.instagramUrl),
+    instagram_url: instagramUrl,
     default_seo_title: trimOrNull(value.defaultSeoTitle),
     default_seo_description: trimOrNull(value.defaultSeoDescription),
     global_seo_image_url: trimOrNull(value.globalSeoImageUrl),

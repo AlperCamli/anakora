@@ -8,6 +8,7 @@ export type {
   LayoutDTO,
   Locale,
   ProgramCardDTO,
+  ProgramCategoryFilterDTO,
   ProgramDetailDTO,
   TestimonialDTO,
   TrustedOrganizationDTO,
@@ -16,7 +17,11 @@ export type {
 export { getLayout } from "./services/layout.service";
 export { getSiteSettings } from "./services/site-settings.service";
 export { getHomepage } from "./services/homepage.service";
-export { getProgramsList, getProgramDetailBySlug } from "./services/programs.service";
+export {
+  getProgramsList,
+  getProgramDetailBySlug,
+  getProgramCategoryFilters,
+} from "./services/programs.service";
 export { getArchive } from "./services/archive.service";
 export { getJournalList, getJournalDetailBySlug } from "./services/journal.service";
 export { getGuides } from "./services/guides.service";

@@ -6,6 +6,7 @@ import { getJournalList, type JournalListDTO } from "../../server/data";
 import { useSiteData } from "../context/SiteDataContext";
 import { formatReadTime, toJournalPreviewViewModel } from "../lib/formatters";
 import { submitLeadSubmission } from "../lib/lead-submissions";
+import { ClearableInput } from "../components/ClearableField";
 
 export function JournalPage() {
   const { locale } = useSiteData();
@@ -334,12 +335,22 @@ export function JournalPage() {
                 className="hidden"
                 aria-hidden="true"
               />
-              <input
+              <ClearableInput
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder={locale === "en" ? "Your email" : "E-posta adresin"}
-                className="flex-1 px-5 py-3 rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary-foreground/50"
+                onChange={setEmail}
+                wrapperClassName="sm:flex-1"
+                placeholder={
+                  locale === "en"
+                    ? "Email address for newsletter updates"
+                    : "Bulten guncellemeleri icin e-posta adresi"
+                }
+                clearLabel={
+                  locale === "en"
+                    ? "Clear email address"
+                    : "E-posta adresini temizle"
+                }
+                className="border border-primary-foreground/70 bg-primary-foreground px-5 py-3 rounded-sm text-primary placeholder:text-primary/65 focus:outline-none focus:ring-2 focus:ring-primary-foreground/70"
               />
               <button
                 type="submit"

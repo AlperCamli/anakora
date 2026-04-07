@@ -20,6 +20,7 @@ import {
   mapGuidePreview,
   mapProgramCardDTO,
   mapProgramCategory,
+  mapProgramCategoryFilter,
   mapProgramDetailDTO,
   mapProgramFaq,
   mapProgramGalleryItem,
@@ -31,6 +32,7 @@ import {
   type GuidePreviewDTO,
   type Locale,
   type ProgramCardDTO,
+  type ProgramCategoryFilterDTO,
   type ProgramDetailDTO,
   type ProgramFAQDTO,
   type ProgramGalleryItemDTO,
@@ -42,6 +44,55 @@ import { asRows, uniqueIds } from "./_shared";
 interface ProgramSupplementalMaps {
   categoriesByProgramId: Record<string, CategoryDTO[]>;
   guidesByProgramId: Record<string, GuidePreviewDTO[]>;
+}
+
+export async function getProgramCategoryFilters(
+  locale: Locale = DEFAULT_LOCALE,
+  options: { activeOnly?: boolean } = { activeOnly: true },
+  client: DataClient = getDataClient(),
+): Promise<ProgramCategoryFilterDTO[]> {
+  const activeOnly = options.activeOnly ?? true;
+
+  let query = client
+    .from("program_categories")
+    .select("id, slug, sort_order, is_featured, is_active")
+    .order("sort_order", { ascending: true })
+    .order("slug", { ascending: true });
+
+  if (activeOnly) {
+    query = query.eq("is_active", true);
+  }
+
+  const { data: categoryData, error: categoryError } = await query;
+  throwIfQueryError("getProgramCategoryFilters:program_categories", categoryError);
+
+  const categories = asRows(categoryData as ProgramCategoryRow[]);
+  if (categories.length === 0) {
+    return [];
+  }
+
+  const categoryIds = categories.map((category) => category.id);
+  const { data: translationData, error: translationError } = await client
+    .from("program_category_translations")
+    .select("id, category_id, locale, name, description")
+    .in("category_id", categoryIds)
+    .in("locale", localeCandidates(locale));
+  throwIfQueryError(
+    "getProgramCategoryFilters:program_category_translations",
+    translationError,
+  );
+
+  const translations = asRows(
+    translationData as ProgramCategoryTranslationRow[],
+  );
+  const translationsByCategory = groupBy(translations, (row) => row.category_id);
+
+  return categories.map((category) =>
+    mapProgramCategoryFilter(
+      category,
+      pickTranslation(translationsByCategory[category.id] ?? [], locale),
+    ),
+  );
 }
 
 async function loadProgramCategories(

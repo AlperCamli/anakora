@@ -3,6 +3,8 @@ import { Link } from "react-router";
 import { Instagram, Mail } from "lucide-react";
 import { useSiteData } from "../context/SiteDataContext";
 import { submitLeadSubmission } from "../lib/lead-submissions";
+import { ClearableInput } from "./ClearableField";
+import { normalizeInstagramUrl, toInstagramHandleLabel } from "../../lib/instagram";
 
 export function Footer() {
   const { locale, layout } = useSiteData();
@@ -11,6 +13,8 @@ export function Footer() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const instagramUrl = normalizeInstagramUrl(layout?.instagramUrl);
+  const instagramLabel = toInstagramHandleLabel(layout?.instagramUrl) ?? "@instagram";
 
   const links =
     layout?.navigation?.length && layout.navigation.length > 0
@@ -75,7 +79,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-primary text-primary-foreground py-16 lg:py-20">
+    <footer id="site-footer" className="bg-primary text-primary-foreground py-16 lg:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div className="lg:col-span-1">
@@ -121,15 +125,15 @@ export function Footer() {
                   {layout.contactEmail}
                 </a>
               )}
-              {layout?.instagramUrl && (
+              {instagramUrl && (
                 <a
-                  href={layout.instagramUrl}
+                  href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors flex items-center gap-2"
                 >
                   <Instagram size={16} />
-                  {layout.instagramUrl.replace("https://instagram.com/", "@")}
+                  {instagramLabel}
                 </a>
               )}
             </div>
@@ -155,11 +159,20 @@ export function Footer() {
                   className="hidden"
                   aria-hidden="true"
                 />
-                <input
+                <ClearableInput
                   type="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder={locale === "en" ? "Your email" : "E-posta adresin"}
+                  onChange={setEmail}
+                  placeholder={
+                    locale === "en"
+                      ? "Email address for newsletter updates"
+                      : "Bulten guncellemeleri icin e-posta adresi"
+                  }
+                  clearLabel={
+                    locale === "en"
+                      ? "Clear email address"
+                      : "E-posta adresini temizle"
+                  }
                   className="px-4 py-2.5 bg-primary-foreground/10 border border-primary-foreground/20 rounded-sm text-sm placeholder:text-primary-foreground/50 focus:outline-none focus:border-primary-foreground/40 transition-colors"
                 />
                 <button
@@ -212,4 +225,3 @@ export function Footer() {
     </footer>
   );
 }
-

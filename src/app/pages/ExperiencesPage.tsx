@@ -1,16 +1,45 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Filter } from "lucide-react";
+import { Filter, SlidersHorizontal } from "lucide-react";
 import { ProgramCard } from "../components/ProgramCard";
 import { useSiteData } from "../context/SiteDataContext";
-import { submitLeadSubmission } from "../lib/lead-submissions";
+import {
+  LEAD_FULL_NAME_MAX_LENGTH,
+  LEAD_MESSAGE_MAX_LENGTH,
+  filterPhoneInput,
+  submitLeadSubmission,
+} from "../lib/lead-submissions";
 import { toProgramCardViewModel } from "../lib/formatters";
-import { getProgramsList, type ProgramCardDTO } from "../../server/data";
+import { ClearableInput, ClearableTextarea } from "../components/ClearableField";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../components/ui/drawer";
+import {
+  getProgramCategoryFilters,
+  getProgramsList,
+  type ProgramCardDTO,
+  type ProgramCategoryFilterDTO,
+} from "../../server/data";
+
+interface FilterOption {
+  id: string;
+  label: string;
+  count: number;
+}
 
 export function ExperiencesPage() {
   const { locale } = useSiteData();
   const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [programs, setPrograms] = useState<ProgramCardDTO[]>([]);
+  const [categories, setCategories] = useState<ProgramCategoryFilterDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,13 +59,19 @@ export function ExperiencesPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await getProgramsList(locale, {
-          statuses: ["upcoming", "published"],
-        });
+        const [programData, categoryData] = await Promise.all([
+          getProgramsList(locale, {
+            statuses: ["upcoming", "published"],
+          }),
+          getProgramCategoryFilters(locale, { activeOnly: true }),
+        ]);
+
         if (!isMounted) {
           return;
         }
-        setPrograms(data);
+
+        setPrograms(programData);
+        setCategories(categoryData);
       } catch (fetchError) {
         if (!isMounted) {
           return;
@@ -53,23 +88,52 @@ export function ExperiencesPage() {
       }
     }
 
-    run();
+    void run();
     return () => {
       isMounted = false;
     };
   }, [locale]);
 
-  const filters = useMemo(() => {
-    const base = [{ id: "all", label: locale === "en" ? "All" : "Tumu" }];
-    const dynamic = Array.from(
-      new Map(
-        programs
-          .flatMap((program) => program.categories)
-          .map((category) => [category.slug, { id: category.slug, label: category.name }]),
-      ).values(),
-    );
+  const categoryCounts = useMemo(() => {
+    const map = new Map<string, number>();
+
+    for (const program of programs) {
+      const uniqueProgramCategorySlugs = new Set(
+        program.categories.map((category) => category.slug),
+      );
+      for (const categorySlug of uniqueProgramCategorySlugs) {
+        map.set(categorySlug, (map.get(categorySlug) ?? 0) + 1);
+      }
+    }
+
+    return map;
+  }, [programs]);
+
+  const filters = useMemo<FilterOption[]>(() => {
+    const base = [
+      {
+        id: "all",
+        label: locale === "en" ? "All" : "Tumu",
+        count: programs.length,
+      },
+    ];
+
+    const dynamic = categories
+      .map((category) => ({
+        id: category.slug,
+        label: category.name,
+        count: categoryCounts.get(category.slug) ?? 0,
+      }))
+      .filter((category) => category.count > 0);
+
     return [...base, ...dynamic];
-  }, [locale, programs]);
+  }, [categories, categoryCounts, locale, programs.length]);
+
+  useEffect(() => {
+    if (!filters.some((filter) => filter.id === activeFilter)) {
+      setActiveFilter("all");
+    }
+  }, [activeFilter, filters]);
 
   const filteredPrograms = useMemo(() => {
     if (activeFilter === "all") {
@@ -79,6 +143,14 @@ export function ExperiencesPage() {
       program.categories.some((category) => category.slug === activeFilter),
     );
   }, [activeFilter, programs]);
+
+  const activeFilterItem =
+    filters.find((filter) => filter.id === activeFilter) ?? filters[0] ?? null;
+
+  function applyFilter(filterId: string) {
+    setActiveFilter(filterId);
+    setIsFilterDrawerOpen(false);
+  }
 
   async function handleContactSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -105,6 +177,7 @@ export function ExperiencesPage() {
         result.fieldErrors?.fullName ??
           result.fieldErrors?.email ??
           result.fieldErrors?.phone ??
+          result.fieldErrors?.message ??
           result.errorMessage ??
           (locale === "en"
             ? "Message could not be sent right now."
@@ -147,23 +220,109 @@ export function ExperiencesPage() {
         </div>
       </section>
 
-      <section className="py-8 border-b border-border sticky top-20 lg:top-24 bg-background/95 backdrop-blur-md z-30">
+      <section className="py-6 border-b border-border sticky top-20 lg:top-24 bg-background/95 backdrop-blur-md z-30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="hidden md:flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
             <Filter size={20} className="text-muted-foreground flex-shrink-0" />
             {filters.map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
+                onClick={() => applyFilter(filter.id)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                   activeFilter === filter.id
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                {filter.label}
+                <span>{filter.label}</span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs ${
+                    activeFilter === filter.id
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : "bg-background text-muted-foreground"
+                  }`}
+                >
+                  {filter.count}
+                </span>
               </button>
             ))}
+          </div>
+
+          <div className="flex items-center justify-between md:hidden">
+            <div>
+              <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                {locale === "en" ? "Filter" : "Filtre"}
+              </p>
+              <p className="text-sm font-medium">
+                {activeFilterItem?.label} ({activeFilterItem?.count ?? 0})
+              </p>
+            </div>
+
+            <Drawer open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
+              <DrawerTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm"
+                >
+                  <SlidersHorizontal size={16} />
+                  {locale === "en" ? "Categories" : "Kategoriler"}
+                </button>
+              </DrawerTrigger>
+
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>
+                    {locale === "en" ? "Filter Experiences" : "Deneyimleri Filtrele"}
+                  </DrawerTitle>
+                  <DrawerDescription>
+                    {locale === "en"
+                      ? "Pick a category to narrow the list."
+                      : "Listeyi daraltmak icin bir kategori secin."}
+                  </DrawerDescription>
+                </DrawerHeader>
+
+                <div className="max-h-[55vh] space-y-2 overflow-y-auto px-4 pb-2">
+                  {activeFilter !== "all" && (
+                    <button
+                      type="button"
+                      onClick={() => applyFilter("all")}
+                      className="w-full rounded-md border border-border bg-muted/40 px-3 py-2 text-sm font-medium"
+                    >
+                      {locale === "en" ? "Reset to All" : "Tumune Sifirla"}
+                    </button>
+                  )}
+
+                  {filters.map((filter) => (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      onClick={() => applyFilter(filter.id)}
+                      className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm ${
+                        activeFilter === filter.id
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-background"
+                      }`}
+                    >
+                      <span>{filter.label}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        {filter.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <DrawerFooter>
+                  <DrawerClose asChild>
+                    <button
+                      type="button"
+                      className="w-full rounded-md border border-border px-4 py-2 text-sm"
+                    >
+                      {locale === "en" ? "Close" : "Kapat"}
+                    </button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
           </div>
         </div>
       </section>
@@ -184,8 +343,7 @@ export function ExperiencesPage() {
           )}
           {!loading && !error && (
             <div className="mb-6 text-sm text-muted-foreground">
-              {filteredPrograms.length}{" "}
-              {locale === "en" ? "programs found" : "program bulundu"}
+              {filteredPrograms.length} {locale === "en" ? "programs found" : "program bulundu"}
             </div>
           )}
 
@@ -240,33 +398,59 @@ export function ExperiencesPage() {
               className="hidden"
               aria-hidden="true"
             />
-            <input
+            <ClearableInput
               type="text"
               value={contactName}
-              onChange={(event) => setContactName(event.target.value)}
-              placeholder={locale === "en" ? "Full name" : "Adiniz soyadiniz"}
+              onChange={setContactName}
+              maxLength={LEAD_FULL_NAME_MAX_LENGTH}
+              placeholder={
+                locale === "en" ? "Name" : "Adiniz"
+              }
+              clearLabel={
+                locale === "en" ? "Clear full name" : "Ad soyad alanini temizle"
+              }
               className="px-4 py-3 border border-border rounded-sm bg-background"
             />
-            <input
+            <ClearableInput
               type="email"
               value={contactEmail}
-              onChange={(event) => setContactEmail(event.target.value)}
-              placeholder={locale === "en" ? "Email (or phone)" : "E-posta (veya telefon)"}
+              onChange={setContactEmail}
+              placeholder={
+                locale === "en"
+                  ? "E-mail"
+                  : "E-posta"
+              }
+              clearLabel={
+                locale === "en" ? "Clear email address" : "E-posta adresini temizle"
+              }
               className="px-4 py-3 border border-border rounded-sm bg-background"
             />
-            <input
+            <ClearableInput
               type="tel"
               value={contactPhone}
-              onChange={(event) => setContactPhone(event.target.value)}
-              placeholder={locale === "en" ? "Phone (or email)" : "Telefon (veya e-posta)"}
+              onChange={(nextValue) => setContactPhone(filterPhoneInput(nextValue))}
+              wrapperClassName="sm:col-span-2"
+              placeholder={
+                locale === "en"
+                  ? "Phone Number"
+                  : "Telefon Numarasi"
+              }
+              clearLabel={
+                locale === "en" ? "Clear phone number" : "Telefon numarasini temizle"
+              }
               className="px-4 py-3 border border-border rounded-sm bg-background"
             />
-            <textarea
+            <ClearableTextarea
               value={contactMessage}
-              onChange={(event) => setContactMessage(event.target.value)}
-              placeholder={locale === "en" ? "Your message" : "Mesajiniz"}
+              onChange={setContactMessage}
+              maxLength={LEAD_MESSAGE_MAX_LENGTH}
+              wrapperClassName="sm:col-span-2"
+              placeholder={
+                locale === "en" ? "How can we help you?" : "Size nasil yardimci olabiliriz?"
+              }
+              clearLabel={locale === "en" ? "Clear message" : "Mesaj alanini temizle"}
               rows={4}
-              className="sm:col-span-2 px-4 py-3 border border-border rounded-sm bg-background resize-none"
+              className="px-4 py-3 border border-border rounded-sm bg-background resize-none"
             />
             <button
               type="submit"
@@ -288,12 +472,8 @@ export function ExperiencesPage() {
             </p>
           </form>
 
-          {contactError && (
-            <p className="mt-3 text-sm text-destructive">{contactError}</p>
-          )}
-          {contactSuccess && (
-            <p className="mt-3 text-sm text-primary">{contactSuccess}</p>
-          )}
+          {contactError && <p className="mt-3 text-sm text-destructive">{contactError}</p>}
+          {contactSuccess && <p className="mt-3 text-sm text-primary">{contactSuccess}</p>}
         </div>
       </section>
     </div>

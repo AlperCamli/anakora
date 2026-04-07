@@ -45,7 +45,7 @@ export function ProgramCard({
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           {spotsLeft && spotsLeft <= 3 && (
-            <div className="absolute top-4 right-4 px-3 py-1.5 bg-accent text-accent-foreground text-xs font-medium rounded-full">
+            <div className="absolute right-4 top-4 rounded-full bg-destructive px-3 py-1.5 text-xs font-semibold text-destructive-foreground shadow-md">
               {spotsLeft} {spotsLeftLabel}
             </div>
           )}

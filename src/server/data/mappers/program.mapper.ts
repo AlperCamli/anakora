@@ -16,6 +16,7 @@ import type {
   GuidePreviewDTO,
   Locale,
   ProgramCardDTO,
+  ProgramCategoryFilterDTO,
   ProgramDetailDTO,
   ProgramFAQDTO,
   ProgramGalleryItemDTO,
@@ -48,6 +49,19 @@ export function mapProgramCategory(
     slug: category.slug,
     name: translation?.name ?? category.slug,
     description: translation?.description ?? null,
+  };
+}
+
+export function mapProgramCategoryFilter(
+  category: ProgramCategoryRow,
+  translation: ProgramCategoryTranslationRow | null,
+): ProgramCategoryFilterDTO {
+  return {
+    slug: category.slug,
+    name: translation?.name ?? category.slug,
+    description: translation?.description ?? null,
+    sortOrder: category.sort_order,
+    isActive: category.is_active,
   };
 }
 

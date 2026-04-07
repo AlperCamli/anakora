@@ -133,6 +133,29 @@ export interface ProgramCategoryOption {
   enName: string | null;
 }
 
+export interface ProgramCategoryEditorValue {
+  id?: string;
+  slug: string;
+  sortOrder: string;
+  isFeatured: boolean;
+  isActive: boolean;
+  trName: string;
+  trDescription: string;
+  enName: string;
+  enDescription: string;
+}
+
+export interface ProgramCategoryListItem {
+  id: string;
+  slug: string;
+  sortOrder: number;
+  isFeatured: boolean;
+  isActive: boolean;
+  trName: string | null;
+  enName: string | null;
+  updatedAt: string;
+}
+
 export interface GuideTranslationValue {
   fullName: string;
   title: string;
